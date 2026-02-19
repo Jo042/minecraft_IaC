@@ -1,0 +1,146 @@
+# ============================================
+# LocalStack + ローカル開発用 Docker Compose
+# ============================================
+#
+# 【このファイルの役割】
+# - LocalStack（AWSエミュレーター）を起動
+# - 開発時に使うMinecraftサーバーも起動可能
+
+# 【使い方】
+# $ docker-compose up -d              # LocalStackのみ起動
+# $ docker-compose --profile minecraft up -d  # MC含めて起動
+
+services:
+  localstack:
+    image: localstack/localstack:latest
+
+    container_name: localstack
+
+    # ポートマッピング
+    # 4566 は LocalStack の統一エンドポイント
+    ports:
+      - "127.0.0.1:4566:4566"  # LocalStack Gateway (全サービス)
+      - "127.0.0.1:4510-4559:4510-4559" # 個別サービス用ポート範囲
+    
+    # 環境変数
+    environment:
+      # 起動するAWSサービスを指定
+      - SERVICES=s3,ec2,iam,lambda,apigateway,ssm
+
+      # デバッグモード（ログが詳細になる）
+      - DEBUG=1
+
+      # LocalStack内でDockerを使えるようにする（Lambda実行などに必要）
+      - DOCKER_HOST=unix:///var/run/docker.sock
+
+    # ボリュームマウント
+    volumes:
+      # LocalStackのデータを永続化
+      # コンテナを再起動してもデータが消えない
+      - "./localstack-data:/var/lib/localstack"
+      
+      # ホストのDockerソケットを共有
+      # LocalStack内からDockerコマンドを実行するため
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    
+    # ヘルスチェック
+    # コンテナが正常に動いているか定期的に確認
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 10s    
+      timeout: 5s      
+      retries: 3       # 3回失敗したら unhealthy
+    
+    # ネットワーク
+    networks:
+      - minecraft-network
+
+  # ========================================
+  # Minecraft Server（ローカルテスト用）
+  # ========================================
+  # profilesを使うと、明示的に指定した時だけ起動する
+  # $ docker-compose --profile minecraft up -d
+  minecraft:
+    image: itzg/minecraft-server:latest
+
+    container_name: minecraft-local
+
+    # このサービスはprofile指定時のみ起動
+    profiles:
+      - minecraft
+
+    ports:
+      - "25565:25565"   # Minecraft 接続ポート
+      - "25575:25575"   # RCON（リモート管理）ポート
+
+    environment:
+      # EULA（利用規約）に同意（必須）
+      EULA: "TRUE"
+
+      # サーバータイプ
+      # VANILLA: 公式バニラサーバー
+      # 他: PAPER, SPIGOT, FORGE など
+      TYPE: "VANILLA"
+
+      # Minecraftバージョン
+      VERSION: "1.21.4"
+
+    # メモリ設定
+      MEMORY: "2G"
+      
+      # RCON（リモートコンソール）設定
+      # Discordからサーバーを操作するために必要
+      ENABLE_RCON: "true"
+      RCON_PASSWORD: "minecraft-dev"  # 開発用なので簡易パスワード
+      RCON_PORT: 25575
+      
+      # サーバー設定
+      MAX_PLAYERS: 10
+      DIFFICULTY: "normal"
+      VIEW_DISTANCE: 10
+      MOTD: "Local Development Server"
+
+      # オンラインモード（正規アカウント認証）
+      # 開発時はfalseでも可（非正規でも接続できる）
+      ONLINE_MODE: "true"
+      
+    volumes:
+      # ワールドデータの永続化
+      # Named Volume を使用（Dockerが管理）
+      - minecraft-data:/data
+    
+    # 再起動ポリシー
+    # unless-stopped: 手動停止以外では再起動
+    restart: unless-stopped
+    
+    # ヘルスチェック
+    # mc-health は itzg/minecraft-server に組み込みのコマンド
+    healthcheck:
+      test: mc-health
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s   # 起動に時間がかかるので60秒待つ
+    
+    networks:
+      - minecraft-network
+
+# ========================================
+# ボリューム定義
+# ========================================
+# Named Volume: Dockerが管理するボリューム
+# メリット: バックアップ・移行が容易、パフォーマンスが良い
+volumes:
+  minecraft-data:
+    driver: local
+
+# ========================================
+# ネットワーク定義
+# ========================================
+# カスタムネットワークを作成
+# メリット: コンテナ間でコンテナ名で通信できる
+networks:
+  minecraft-network:
+    driver: bridge
+
+
