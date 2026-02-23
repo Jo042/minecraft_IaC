@@ -8,7 +8,7 @@ terraform {
     required_providers {
         # これによりopentofuでawsと話せる
         aws = {
-            source = "hashicrop/aws"
+            source = "hashicorp/aws"
             version = "~> 5.0"
         }
     }
