@@ -3,7 +3,7 @@
 # --------------------------------------------
 
 resource "aws_iam_role" "minecraft" {
-  name = "${local.name_prefix}--ec2-role"
+  name = "${local.name_prefix}-ec2-role"
 
   # Trust Policy（誰がこのロールを使えか）
   assume_role_policy = jsonencode({

@@ -2,12 +2,12 @@
 # Minecraft Server 用 Security Group
 # --------------------------------------------
 resource "aws_security_group" "minecraft" {
-  name = "${local.name_prefix}--minecraft-sg"
+  name = "${local.name_prefix}-minecraft-sg"
   description = "Security group for Minecraft server"
   vpc_id = aws_vpc.main.id
 
   tags = merge(local.common_tags, {
-    Name = "${local.name_prefix}--minecraft-sg"
+    Name = "${local.name_prefix}-minecraft-sg"
   })
 }
 
@@ -25,7 +25,7 @@ resource "aws_vpc_security_group_ingress_rule" "minecraft_game" {
   cidr_ipv4 = "0.0.0.0/0"
 
   tags = {
-    Name = "${local.name_prefix}--minecraft-game"
+    Name = "${local.name_prefix}-minecraft-game"
   }
 }
 
@@ -44,7 +44,7 @@ resource "aws_vpc_security_group_ingress_rule" "minecraft_rcon" {
   cidr_ipv4 = var.vpc_cidr
 
   tags = {
-    Name = "${local.name_prefix}--minecraft-rcon"
+    Name = "${local.name_prefix}-minecraft-rcon"
   }
 }
 
@@ -60,6 +60,6 @@ resource "aws_vpc_security_group_egress_rule" "allow_all" {
   cidr_ipv4 = "0.0.0.0/0"
 
   tags = {
-    Name = "${local.name_prefix}--allow-all-outbound"
+    Name = "${local.name_prefix}-allow-all-outbound"
   }
 }

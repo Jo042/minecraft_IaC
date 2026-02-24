@@ -45,6 +45,10 @@ resource "aws_s3_bucket_lifecycle_configuration" "backup" {
       days = var.backup_retention_days
     }
 
+    filter {
+        prefix = "backup/"
+    }
+
     noncurrent_version_expiration {
       noncurrent_days = var.backup_retention_days
     }
