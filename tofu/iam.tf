@@ -69,7 +69,7 @@ resource "aws_iam_role_policy_attachment" "ssm" {
 # --------------------------------------------
 # CloudWatch Logs 用ポリシー
 # --------------------------------------------
-resource "aws_iam_role_policy" "name" {
+resource "aws_iam_role_policy" "cloudwatch_logs" {
   name = "${local.name_prefix}-cloudwatch-logs-policy"
   role = aws_iam_role.minecraft.id
 
