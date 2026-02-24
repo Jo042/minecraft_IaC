@@ -18,7 +18,7 @@ resource "aws_s3_bucket" "backup" {
   tags = merge(local.common_tags, {
     Name    = "${local.name_prefix}-backup"
     Purpose = "Minecraft world backup"
-  }) 
+  })
 }
 
 # --------------------------------------------
@@ -38,7 +38,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "backup" {
   bucket = aws_s3_bucket.backup.id
 
   rule {
-    id = "expire-old-backups"
+    id     = "expire-old-backups"
     status = "Enabled"
 
     expiration {
@@ -46,7 +46,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "backup" {
     }
 
     filter {
-        prefix = "backup/"
+      prefix = "backup/"
     }
 
     noncurrent_version_expiration {
@@ -61,9 +61,9 @@ resource "aws_s3_bucket_lifecycle_configuration" "backup" {
 resource "aws_s3_bucket_public_access_block" "backup" {
   bucket = aws_s3_bucket.backup.id
 
-  block_public_acls = true
-  block_public_policy = true
-  ignore_public_acls = true
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
   restrict_public_buckets = true
 }
 

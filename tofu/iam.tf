@@ -9,13 +9,13 @@ resource "aws_iam_role" "minecraft" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
-        {
-            Action = "sts:AssumeRole"
-            Effect = "Allow"
-            Principal = {
-                Service = "ec2.amazonaws.com"
-            }
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
         }
+      }
     ]
   })
   tags = local.common_tags
@@ -61,7 +61,7 @@ resource "aws_iam_role_policy" "name" {
 # SSM 用マネージドポリシーをアタッチ
 # --------------------------------------------
 resource "aws_iam_role_policy_attachment" "ssm" {
-  role = aws_iam_role.minecraft.name
+  role       = aws_iam_role.minecraft.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 

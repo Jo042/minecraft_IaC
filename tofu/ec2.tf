@@ -2,18 +2,18 @@
 # 最新の Amazon Linux 2023 AMI を取得
 # --------------------------------------------
 data "aws_ami" "amazon_linux_2023" {
-    most_recent = true
-    owners = ["amazon"]
+  most_recent = true
+  owners      = ["amazon"]
 
-    filter {
-      name = "name"
-      values = ["al2023-ami-*-x86_64"]
-    }
+  filter {
+    name   = "name"
+    values = ["al2023-ami-*-x86_64"]
+  }
 
-    filter {
-      name = "virtualization-type"
-      values = ["hvm"]
-    }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
 }
 
 # --------------------------------------------
@@ -22,7 +22,7 @@ data "aws_ami" "amazon_linux_2023" {
 resource "aws_instance" "minecraft" {
   # AMI(OSイメージ)
   ami = data.aws_ami.amazon_linux_2023.id
-  
+
   # インスタンスタイプ（スペック）
   instance_type = var.instance_type
 
@@ -31,16 +31,16 @@ resource "aws_instance" "minecraft" {
 
   # セキュリティグループ
   vpc_security_group_ids = [aws_security_group.minecraft.id]
-  
+
   # IAM ロール（後で定義）
   iam_instance_profile = aws_iam_instance_profile.minecraft.name
 
   # EBS（ストレージ）設定
   root_block_device {
-    volume_type = "gp3"
-    volume_size = var.volume_size
+    volume_type           = "gp3"
+    volume_size           = var.volume_size
     delete_on_termination = true
-    encrypted = true
+    encrypted             = true
 
     tags = merge(local.minecraft_tags, {
       Name = "${local.name_prefix}-ebs"
@@ -87,8 +87,8 @@ resource "aws_instance" "minecraft" {
 
   # インスタンスメタデータサービス v2 を必須
   metadata_options {
-    http_endpoint = "enabled"
-    http_tokens = "required"
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"
     http_put_response_hop_limit = 1
   }
 
@@ -97,7 +97,7 @@ resource "aws_instance" "minecraft" {
   })
 
   lifecycle {
-    ignore_changes = [ami]  # AMI の更新は無視（意図しない再作成を防ぐ）
+    ignore_changes = [ami] # AMI の更新は無視（意図しない再作成を防ぐ）
   }
 }
 
@@ -117,6 +117,6 @@ resource "aws_eip" "minecraft" {
 # EIP を EC2 に関連付け
 # --------------------------------------------
 resource "aws_eip_association" "minecraft" {
-  instance_id = aws_instance.minecraft.id
+  instance_id   = aws_instance.minecraft.id
   allocation_id = aws_eip.minecraft.id
 }

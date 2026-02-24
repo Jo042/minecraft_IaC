@@ -2,9 +2,9 @@
 # Minecraft Server 用 Security Group
 # --------------------------------------------
 resource "aws_security_group" "minecraft" {
-  name = "${local.name_prefix}-minecraft-sg"
+  name        = "${local.name_prefix}-minecraft-sg"
   description = "Security group for Minecraft server"
-  vpc_id = aws_vpc.main.id
+  vpc_id      = aws_vpc.main.id
 
   tags = merge(local.common_tags, {
     Name = "${local.name_prefix}-minecraft-sg"
@@ -16,10 +16,10 @@ resource "aws_security_group" "minecraft" {
 # --------------------------------------------
 resource "aws_vpc_security_group_ingress_rule" "minecraft_game" {
   security_group_id = aws_security_group.minecraft.id
-  description = "Minecraft game port"
-  from_port = 25565
-  to_port = 25565
-  ip_protocol = "tcp"
+  description       = "Minecraft game port"
+  from_port         = 25565
+  to_port           = 25565
+  ip_protocol       = "tcp"
 
   # 全ての IP アドレスからのアクセスを許可
   cidr_ipv4 = "0.0.0.0/0"
@@ -36,8 +36,8 @@ resource "aws_vpc_security_group_ingress_rule" "minecraft_rcon" {
   security_group_id = aws_security_group.minecraft.id
 
   description = "Minecraft RCON port (internal only)"
-  from_port = 25575
-  to_port = 25575
+  from_port   = 25575
+  to_port     = 25575
   ip_protocol = "tcp"
 
   # VPC 内部からのみアクセス許可

@@ -4,17 +4,17 @@
 
 output "vpc_id" {
   description = "作成された VPC の ID"
-  value = aws_vpc.main.id
+  value       = aws_vpc.main.id
 }
 
 output "vpc_cidr" {
   description = "VPC の CIDR ブロック"
-  value = aws_vpc.main.cidr_block
+  value       = aws_vpc.main.cidr_block
 }
 
 output "public_subnet_id" {
   description = "パブリックサブネットの ID"
-  value = aws_subnet.public.id
+  value       = aws_subnet.public.id
 }
 
 # --------------------------------------------
@@ -23,22 +23,22 @@ output "public_subnet_id" {
 
 output "instance_id" {
   description = "EC2 インスタンスの ID"
-  value = aws_instance.minecraft.id
+  value       = aws_instance.minecraft.id
 }
 
 output "instance_private_ip" {
   description = "EC2 のプライベート IP アドレス"
-  value = aws_instance.minecraft.private_ip
+  value       = aws_instance.minecraft.private_ip
 }
 
 output "elastic_ip" {
   description = "Elastic IP アドレス"
-  value = aws_eip.minecraft.public_ip
+  value       = aws_eip.minecraft.public_ip
 }
 
 output "minecraft_address" {
   description = "Minecraft サーバーの接続先"
-  value = "${aws_eip.minecraft.public_ip}:25565"
+  value       = "${aws_eip.minecraft.public_ip}:25565"
 }
 
 # --------------------------------------------
@@ -47,7 +47,7 @@ output "minecraft_address" {
 
 output "security_group_id" {
   description = "Minecraft 用セキュリティグループの ID"
-  value = aws_security_group.minecraft.id
+  value       = aws_security_group.minecraft.id
 }
 
 # --------------------------------------------
