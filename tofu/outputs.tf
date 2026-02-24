@@ -51,6 +51,34 @@ output "security_group_id" {
 }
 
 # --------------------------------------------
+# S3 関連
+# --------------------------------------------
+
+output "backup_bucket_name" {
+  description = "バックアップ用 S3 バケット名"
+  value       = aws_s3_bucket.backup.id
+}
+
+output "backup_bucket_arn" {
+  description = "バックアップ用 S3 バケットの ARN"
+  value       = aws_s3_bucket.backup.arn
+}
+
+# --------------------------------------------
+# IAM 関連
+# --------------------------------------------
+
+output "iam_role_name" {
+  description = "EC2 用 IAM ロール名"
+  value       = aws_iam_role.minecraft.name
+}
+
+output "iam_role_arn" {
+  description = "EC2 用 IAM ロールの ARN"
+  value       = aws_iam_role.minecraft.arn
+}
+
+# --------------------------------------------
 # 便利な出力
 # --------------------------------------------
 
