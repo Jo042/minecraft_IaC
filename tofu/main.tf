@@ -11,6 +11,11 @@ terraform {
             source = "hashicorp/aws"
             version = "~> 5.0"
         }
+
+        random = {
+            source = "hashicorp/random"
+            version = "~> 3.0"
+        }
     }
 
     # tfstate の保存先（後で S3 に変更可能）
