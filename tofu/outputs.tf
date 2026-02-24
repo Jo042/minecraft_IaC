@@ -18,29 +18,43 @@ output "public_subnet_id" {
 }
 
 # --------------------------------------------
-# EC2 関連（後で追加）
+# EC2 関連
 # --------------------------------------------
 
-# output "instance_id" {
-#   description = "EC2 インスタンスの ID"
-#   value = aws_instance.minecraft.id
-# }
+output "instance_id" {
+  description = "EC2 インスタンスの ID"
+  value = aws_instance.minecraft.id
+}
 
-# output "public_ip" {
-#   description = "EC2 のパブリック IP アドレス"
-#   value = aws_eip.minecraft.public_ip
-# }
+output "instance_private_ip" {
+  description = "EC2 のプライベート IP アドレス"
+  value = aws_instance.minecraft.private_ip
+}
 
-# output "minecraft_address" {
-#   description = "Minecraft サーバーの接続先"
-#   value = "${aws_eip.minecraft.public_ip}:25565"
-# }
+output "elastic_ip" {
+  description = "Elastic IP アドレス"
+  value = aws_eip.minecraft.public_ip
+}
+
+output "minecraft_address" {
+  description = "Minecraft サーバーの接続先"
+  value = "${aws_eip.minecraft.public_ip}:25565"
+}
 
 # --------------------------------------------
-# S3 関連（後で追加）
+# Security Group 関連
 # --------------------------------------------
 
-# output "backup_bucket_name" {
-#   description = "バックアップ用 S3 バケット名"
-#   value = aws_s3_bucket.backup.id
-# }
+output "security_group_id" {
+  description = "Minecraft 用セキュリティグループの ID"
+  value = aws_security_group.minecraft.id
+}
+
+# --------------------------------------------
+# 便利な出力
+# --------------------------------------------
+
+output "ssm_connect_command" {
+  description = "SSM でインスタンスに接続するコマンド"
+  value       = "aws ssm start-session --target ${aws_instance.minecraft.id}"
+}
