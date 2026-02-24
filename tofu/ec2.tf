@@ -54,6 +54,10 @@ resource "aws_instance" "minecraft" {
     exec > >(tee /var/log/user-data.log) 2>&1
     echo "=== User Data Script Started ==="
 
+    dnf install -y amazon-ssm-agent
+    systemctl enable amazon-ssm-agent
+    systemctl start amazon-ssm-agent
+
     # システムアップデート
     dnf update -y
 
