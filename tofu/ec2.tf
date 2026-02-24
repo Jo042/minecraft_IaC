@@ -33,7 +33,7 @@ resource "aws_instance" "minecraft" {
   vpc_security_group_ids = [aws_security_group.minecraft.id]
   
   # IAM ロール（後で定義）
-  # iam_instance_profile = aws_iam_instance_profile.minecraft.name
+  iam_instance_profile = aws_iam_instance_profile.minecraft.name
 
   # EBS（ストレージ）設定
   root_block_device {
