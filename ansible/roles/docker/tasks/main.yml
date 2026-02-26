@@ -1,0 +1,72 @@
+# --------------------------------------------
+# Docker インストール
+# --------------------------------------------
+- name: Install Docker
+  ansible.builtin.dnf:
+    name: docker
+    state: present
+
+- name: Start and enable Docker service
+  ansible.builtin.systemd:
+    name: docker
+    state: started
+    enabled: yes
+  # state: started = 起動する（既に起動中ならスキップ）
+  # enabled: yes = OS起動時に自動起動
+
+- name: Add users to docker group
+  ansible.builtin.user:
+    name: "{{ item }}"
+    groups: docker
+    append: yes
+  loop: "{{ docker_users }}"
+  # loop: リストの各要素に対して繰り返し実行
+  # item: 現在の要素
+  # append: yes = 既存のグループに追加（上書きしない）
+
+
+# --------------------------------------------
+# Docker Compose インストール
+# --------------------------------------------
+- name: Check if Docker Compose is installed
+  ansible.builtin.stat:
+    path: /usr/local/bin/docker-compose
+  register: docker_compose_file
+
+- name: Download Docker Compose
+  ansible.builtin.get_url:
+    url: "https://github.com/docker/compose/releases/download/v{{ docker_compose_version }}/docker-compose-linux-x86_64"
+    dest: /usr/local/bin/docker-compose
+    mode: '0755'
+  when: not docker_compose_file.stat.exists
+  # stat モジュールでファイルの存在を確認
+  # 存在しない場合のみダウンロード（冪等性）
+
+- name: Create symlink for docker-compose
+  ansible.builtin.file:
+    src: /usr/local/bin/docker-compose
+    dest: /usr/bin/docker-compose
+    state: link
+  # シンボリックリンクを作成
+  # どこからでも docker-compose コマンドが使えるように
+
+# --------------------------------------------
+# Docker の動作確認
+# --------------------------------------------
+- name: Verify Docker installation
+  ansible.builtin.command: docker --version
+  register: docker_version
+  changed_when: false
+
+- name: Display Docker version
+  ansible.builtin.debug:
+    msg: "{{ docker_version.stdout }}"
+
+- name: Verify Docker Compose installation
+  ansible.builtin.command: docker-compose --version
+  register: compose_version
+  changed_when: false
+
+- name: Display Docker Compose version
+  ansible.builtin.debug:
+    msg: "{{ compose_version.stdout }}"
