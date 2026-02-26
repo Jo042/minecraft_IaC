@@ -1,0 +1,56 @@
+---
+# ============================================
+# プロジェクト情報
+# ============================================
+project_name: minecraft
+environments: prod
+
+# ============================================
+# パス設定
+# ============================================
+# Minecraft のインストール先
+minecraft_dir: /opt/minecraft
+
+# バックアップの一時保存先
+backup_dir: /opt/minecraft/backups
+
+# ============================================
+# Docker 設定
+# ============================================
+docker_compose_version: "2.24.0"
+
+# ============================================
+# Minecraft 設定
+# ============================================
+minecraft_image: "itzg/minecraft-server:latest"
+minecraft_type: "VANILLA"
+minecraft_difficulty: "normal"
+minecraft_max_players: 20
+minecraft_view_distance: 10
+minecraft_motd: "Welcome to Minecraft Server!"
+minecraft_online_mode: "true"
+
+# ============================================
+# RCON 設定
+# ============================================
+rcon_enabled: "true"
+# RCON パスワードは Ansible Vault で暗号化するのがベスト
+rcon_password: "your-secure-rcon-password"
+
+# ============================================
+# バックアップ設定
+# ============================================
+# S3 バケット名
+backup_s3_bucket: "minecraft-prod-backup-xxxxxxxx"
+backup_retention_days: 30
+
+# バックアップスケジュール（cron形式）
+# 毎日 AM 4:00 (JST) = UTC 19:00
+backup_schedule:
+  minute: "0"
+  hour: "19"
+
+# ============================================
+# AWS 設定
+# ============================================
+aws_region: ap-northeast-1
