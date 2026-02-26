@@ -1,3 +1,4 @@
+
 # --------------------------------------------
 # ランダムな文字列を生成（バケット名のサフィックス）
 # --------------------------------------------
@@ -79,4 +80,51 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "backup" {
     }
     bucket_key_enabled = true
   }
+}
+
+# --------------------------------------------
+# SSM セッション用 S3 バケット
+# --------------------------------------------
+resource "aws_s3_bucket" "ssm" {
+  bucket = "${local.name_prefix}-ssm-${random_id.bucket_suffix.hex}"
+
+  # SSMの一時ファイルなので削除しやすくしておく
+  force_destroy = true
+
+  tags = merge(local.common_tags, {
+    Name    = "${local.name_prefix}-ssm"
+    Purpose = "Ansible SSM connection temporary files"
+  })
+}
+
+# --------------------------------------------
+# SSM バケットのライフサイクル（1日で自動削除）
+# --------------------------------------------
+resource "aws_s3_bucket_lifecycle_configuration" "ssm" {
+  bucket = aws_s3_bucket.ssm.id
+
+  rule {
+    id     = "expire-ssm-temp-files"
+    status = "Enabled"
+
+    expiration {
+      days = 1
+    }
+
+    filter {
+      prefix = ""
+    }
+  }
+}
+
+# --------------------------------------------
+# パブリックアクセスのブロック
+# --------------------------------------------
+resource "aws_s3_bucket_public_access_block" "ssm" {
+  bucket = aws_s3_bucket.ssm.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }

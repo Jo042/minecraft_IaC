@@ -63,6 +63,10 @@ output "backup_bucket_arn" {
   description = "バックアップ用 S3 バケットの ARN"
   value       = aws_s3_bucket.backup.arn
 }
+output "ssm_bucket_name" {
+  description = "SSM用 S3 バケット名"
+  value       = aws_s3_bucket.ssm.bucket
+}
 
 # --------------------------------------------
 # IAM 関連

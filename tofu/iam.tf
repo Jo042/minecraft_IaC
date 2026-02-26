@@ -39,7 +39,10 @@ resource "aws_iam_role_policy" "name" {
           "s3:ListBucket",
           "s3:GetBucketLocation"
         ]
-        Resource = aws_s3_bucket.backup.arn
+        Resource = [
+            aws_s3_bucket.backup.arn,
+            aws_s3_bucket.ssm.arn
+        ]
       },
       {
         Sid    = "AllowS3ObjectOperations"
@@ -51,7 +54,10 @@ resource "aws_iam_role_policy" "name" {
           "s3:ListMultipartUploadParts",
           "s3:AbortMultipartUpload"
         ]
-        Resource = "${aws_s3_bucket.backup.arn}/*"
+        Resource = [
+          "${aws_s3_bucket.backup.arn}/*",
+          "${aws_s3_bucket.ssm.arn}/*"
+        ]
       }
     ]
   })
