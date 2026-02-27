@@ -37,7 +37,7 @@
       ansible.builtin.debug:
         msg: |
           ========================================
-          ✅ Setup completed!
+          Setup completed!
           
           Next steps:
           1. Run 'ansible-playbook playbooks/deploy.yml' to start Minecraft
