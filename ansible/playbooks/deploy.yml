@@ -1,0 +1,40 @@
+---
+- name: Deploy Minecraft Server
+  hosts: minecraft
+  become: true
+
+  pre_tasks:
+    - name: Display deployment info
+      ansible.builtin.debug:
+        msg: |
+          ========================================
+          Deploying Minecraft Server
+          Host: {{ inventory_hostname }}
+          Version: {{ minecraft_version }}
+          Memory: {{ minecraft_memory }}
+          ========================================
+
+  roles:
+    - role: minecraft
+      tags: minecraft
+  
+  post_tasks:
+    - name: Get server IP
+      ansible.builtin.set_fact:
+        server_ip: "{{ ansible_host }}"
+
+    - name: Display connection info
+      ansible.builtin.debug:
+        msg: |
+          ========================================
+          Deployment completed!
+          
+          Minecraft Server: {{ server_ip }}:{{ minecraft_port }}
+          RCON Port: {{ rcon_port }}
+          Version: {{ minecraft_version }}
+          
+          Commands:
+          - Check status: docker ps
+          - View logs: docker logs -f minecraft-server
+          - RCON: docker exec -it minecraft-server rcon-cli
+          ========================================
