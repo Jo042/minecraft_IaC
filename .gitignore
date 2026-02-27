@@ -35,6 +35,8 @@ ansible/inventory/hosts.yml
 # リトライファイル
 *.retry
 
+minecraft-server.yml
+
 
 # ===========================================
 # Python
