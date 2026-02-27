@@ -1,0 +1,79 @@
+---
+- name: Create Minecraft directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: ec2-user
+    group: ec2-user
+    mode: '0755'
+  loop:
+    - "{{ minecraft_dir }}"
+    - "{{ minecraft_data_dir }}"
+    - "{{ backup_dir }}"
+
+- name: Deploy docker-compose.yml
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ minecraft_compose_file }}"
+    owner: ec2-user
+    group: ec2-user
+    mode: '0644'
+  register: compose_file
+
+- name: Deploy .env file
+  ansible.builtin.template:
+    src: .env.j2
+    dest: "{{ minecraft_env_file }}"
+    owner: ec2-user
+    group: ec2-user
+    mode: '0600'  # パスワードを含む
+  register: env_file
+
+- name: Pull Minecraft Docker image
+  community.docker.docker_image:
+    name: "{{ minecraft_image }}"
+    tag: "{{ minecraft_image_tag }}"
+    source: pull
+
+- name: Start Minecraft server
+  community.docker.docker_compose_v2:
+    project_src: "{{ minecraft_dir }}"
+    state: present
+  register: compose_result
+
+- name: Restart Minecraft if config changed
+  community.docker.docker_compose_v2:
+    project_src: "{{ minecraft_dir }}"
+    state: present
+    restarted: true
+  when: compose_file.changed or env_file.changed
+
+- name: Wait for Minecraft to be healthy
+  community.docker.docker_container_info:
+    name: minecraft-server
+  register: container_info
+  until: container_info.container.State.Health.Status == "healthy"
+  retries: 20
+  delay: 15
+
+- name: Verify Minecraft is running
+  ansible.builtin.command: docker ps --filter name=minecraft-server --format "{{ '{{' }}.Status{{ '}}' }}"
+  register: mc_status
+  changed_when: false
+
+- name: Display Minecraft status
+  ansible.builtin.debug:
+    msg: "Minecraft server status: {{ mc_status.stdout }}"
+
+- name: Create systemd service for Minecraft
+  ansible.builtin.template:
+    src: minecraft.service.j2
+    dest: /etc/systemd/system/minecraft.service
+    mode: '0644'
+  notify: Reload systemd
+
+- name: Enable Minecraft service
+  ansible.builtin.systemd:
+    name: minecraft
+    enabled: yes
+    daemon_reload: yes

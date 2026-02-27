@@ -1,0 +1,55 @@
+services:
+  minecraft:
+    image: {{ minecraft_image }}:{{ minecraft_image_tag }}
+    container_name: minecraft-server
+
+    ports:
+      - "{{ minecraft_port_java }}:25565"
+      - "{{ minecraft_port_geyser }}:19132/udp"
+      - "{{ rcon_port }}:25575
+
+    environment:
+      # 基本設定
+      EULA: "TRUE"
+      TYPE: "{{ minecraft_type }}"
+      VERSION: "{{ minecraft_version }}"
+      MEMORY: "{{ minecraft_memory }}"
+      
+      # RCON設定
+      ENABLE_RCON: "{{ rcon_enabled }}"
+      RCON_PASSWORD: "{{ rcon_password }}"
+      RCON_PORT: "25575"
+      
+      # サーバー設定
+      MAX_PLAYERS: "{{ minecraft_max_players }}"
+      DIFFICULTY: "{{ minecraft_difficulty }}"
+      MODE: "{{ minecraft_mode }}"
+      VIEW_DISTANCE: "{{ minecraft_view_distance }}"
+      MOTD: "{{ minecraft_motd }}"
+      ONLINE_MODE: "{{ minecraft_online_mode }}"
+      ENABLE_COMMAND_BLOCK: "{{ minecraft_enable_command_block }}"
+      SPAWN_PROTECTION: "{{ minecraft_spawn_protection }}"
+      
+      # タイムゾーン
+      TZ: "Asia/Tokyo"
+
+    volumes:
+      - {{ minecraft_data_dir }}:/data
+    
+    restart: {{ minecraft_restart_policy }}
+
+    # ヘルスチェック
+    healthcheck:
+      test: mc-health
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+
+    # リソース制限
+    deploy:
+      resources:
+        limits:
+          memory: 6G
+        reservations:
+          memory: {{ minecraft_memory }}
