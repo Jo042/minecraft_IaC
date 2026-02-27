@@ -37,6 +37,7 @@ ansible/inventory/hosts.yml
 
 minecraft-server.yml
 
+.secrets/vault_pass.txt
 
 # ===========================================
 # Python

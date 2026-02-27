@@ -30,18 +30,23 @@ minecraft_view_distance: 10
 minecraft_motd: "Welcome to Minecraft Server!"
 minecraft_online_mode: "true"
 
+
+minecraft_version: "1.21.4"
+minecraft_memory: "2G"
+minecraft_port_java: 25565
+minecraft_port_geyser: 19132
+rcon_port: 25575
+
 # ============================================
 # RCON 設定
 # ============================================
 rcon_enabled: "true"
-# RCON パスワードは Ansible Vault で暗号化するのがベスト
-rcon_password: "your-secure-rcon-password"
+
 
 # ============================================
 # バックアップ設定
 # ============================================
 # S3 バケット名
-backup_s3_bucket: "minecraft-prod-backup-xxxxxxxx"
 backup_retention_days: 30
 
 # バックアップスケジュール（cron形式）

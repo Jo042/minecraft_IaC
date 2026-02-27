@@ -1,0 +1,10 @@
+---
+# EC2デプロイのたびにここだけ更新する
+ec2_instance_id: ""
+ssm_bucket_name: ""
+backup_s3_bucket: ""
+aws_region: 
+
+# RCON パスワードは Ansible Vault で暗号化するのがベスト
+rcon_password: "{{ vault_rcon_password }}"
+
