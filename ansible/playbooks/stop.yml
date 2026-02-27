@@ -1,0 +1,42 @@
+---
+- name: Stop Minecraft Server
+  hosts: minecraft
+  become: true
+
+  tasks:
+    - name: Check if container is running
+      community.docker.docker_container_info:
+        name: minecraft-server
+      register: container_info
+      ignore_errors: true
+
+    - name: Notify players
+      ansible.builtin.command:
+        cmd: docker exec minecraft-server rcon-cli --password "{{ rcon_password }}" "say [Server] サーバーは1分後に停止します。"
+      when: container_info.container is defined
+      ignore_errors: true
+
+    - name: Wait 1 minute
+      ansible.builtin.pause:
+        minutes: 1
+      when: container_info.container is defined
+
+    - name: Save world
+      ansible.builtin.command:
+        cmd: docker exec minecraft-server rcon-cli --password "{{ rcon_password }}" "save-all"
+      when: container_info.container is defined
+      ignore_errors: true
+
+    - name: Wait for save
+      ansible.builtin.pause:
+        seconds: 10
+      when: container_info.container is defined
+
+    - name: Stop Minecraft server
+      community.docker.docker_compose_v2:
+        project_src: "{{ minecraft_dir }}"
+        state: absent
+
+    - name: Display message
+      ansible.builtin.debug:
+        msg: "Minecraft server stopped"
