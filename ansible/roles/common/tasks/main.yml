@@ -23,6 +23,7 @@
       - tmux # ターミナルマルチプレクサ
       - git
       - python3-pip  
+      - cronie
     state: present
 
 - name: Check if AWS CLI is installed
