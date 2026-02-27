@@ -25,7 +25,7 @@ crash.*.log
 # Ansible
 # ===========================================
 # インベントリに実際のIPが入ることがある
-inventory/hosts.yml
+ansible/inventory/hosts.yml
 !inventory/hosts.yml.example
 
 # Ansible Vault のパスワードファイル
@@ -34,6 +34,7 @@ inventory/hosts.yml
 
 # リトライファイル
 *.retry
+
 
 # ===========================================
 # Python
