@@ -45,7 +45,7 @@
   community.docker.docker_compose_v2:
     project_src: "{{ minecraft_dir }}"
     state: present
-    restarted: true
+    recreate: always
   when: compose_file.changed or env_file.changed
 
 - name: Wait for Minecraft to be healthy
