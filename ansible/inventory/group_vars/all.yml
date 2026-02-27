@@ -22,7 +22,7 @@ docker_compose_version: "2.24.0"
 # ============================================
 # Minecraft 設定
 # ============================================
-minecraft_image: "itzg/minecraft-server:latest"
+minecraft_image: "itzg/minecraft-server"
 minecraft_type: "VANILLA"
 minecraft_difficulty: "normal"
 minecraft_max_players: 20
