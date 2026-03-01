@@ -14,8 +14,8 @@ resource "aws_s3_bucket" "backup" {
   bucket = "${local.name_prefix}-backup-${random_id.bucket_suffix.hex}"
 
   # バケット削除時の挙動
-  force_destroy = var.environment == "local"
-
+  force_destroy = true
+  
   tags = merge(local.common_tags, {
     Name    = "${local.name_prefix}-backup"
     Purpose = "Minecraft world backup"
