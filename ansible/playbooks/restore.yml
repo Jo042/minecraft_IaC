@@ -1,0 +1,120 @@
+# ============================================
+# playbooks/restore.yml - バックアップからリストア
+# ============================================
+#
+# 【使い方】
+# $ ansible-playbook -i inventory/hosts.yml playbooks/restore.yml \
+#     -e "backup_file=minecraft_backup_20240115_040000.tar.gz"
+#
+# 【注意】
+# - サーバーは停止されます
+# - 現在のワールドは退避されます
+
+---
+- name: Restore Minecraft World
+  hosts: minecraft
+  become: true
+
+  vars_prompt:
+    - name: backup_file
+      prompt: "Enter backup filename (e.g., minecraft_backup_20240115_040000.tar.gz)"
+      private: false
+
+    - name: confirm_restore
+      prompt: "This will stop the server and replace current world. Continue? (yes/no)"
+      private: false
+
+  pre_tasks:
+    - name: Validate confirmation
+      ansible.builtin.fail:
+        msg: "Restore cancelled by user"
+      when: confirm_restore != "yes"
+
+  tasks:
+    - name: Display restore info
+      ansible.builtin.debug:
+        msg: |
+          ========================================
+          Restoring from: {{ backup_file }}
+          ========================================
+
+    # --------------------------------------------
+    # サーバー停止
+    # --------------------------------------------
+    - name: Stop Minecraft server
+      community.docker.docker_compose_v2:
+        project_src: "{{ minecraft_dir }}"
+        state: absent
+      ignore_errors: true
+
+    - name: Wait for container to stop
+      ansible.builtin.pause:
+        seconds: 10
+
+    # --------------------------------------------
+    # 現在のデータを退避
+    # --------------------------------------------
+    - name: Create timestamp for current data
+      ansible.builtin.set_fact:
+        current_timestamp: "{{ ansible_date_time.epoch }}"
+
+    - name: Backup current data before restore
+      ansible.builtin.command:
+        cmd: "mv {{ minecraft_data_dir }} {{ minecraft_data_dir }}_before_restore_{{ current_timestamp }}"
+      when: ansible_facts['file'] is defined
+      ignore_errors: true
+
+    - name: Create new data directory
+      ansible.builtin.file:
+        path: "{{ minecraft_data_dir }}"
+        state: directory
+        owner: ec2-user
+        group: ec2-user
+        mode: '0755'
+
+    # --------------------------------------------
+    # S3 からダウンロード
+    # --------------------------------------------
+    - name: Download backup from S3
+      ansible.builtin.command:
+        cmd: "aws s3 cp s3://{{ backup_s3_bucket }}/backups/{{ backup_file }} {{ backup_dir }}/{{ backup_file }} --region {{ aws_region }}"
+      register: download_result
+
+    # --------------------------------------------
+    # 展開
+    # --------------------------------------------
+    - name: Extract backup
+      ansible.builtin.unarchive:
+        src: "{{ backup_dir }}/{{ backup_file }}"
+        dest: "{{ minecraft_data_dir }}"
+        remote_src: yes
+        owner: ec2-user
+        group: ec2-user
+
+    # --------------------------------------------
+    # サーバー起動
+    # --------------------------------------------
+    - name: Start Minecraft server
+      community.docker.docker_compose_v2:
+        project_src: "{{ minecraft_dir }}"
+        state: present
+
+    - name: Wait for Minecraft to be healthy
+      community.docker.docker_container_info:
+        name: minecraft-server
+      register: container_info
+      until: container_info.container.State.Health.Status == "healthy"
+      retries: 20
+      delay: 15
+
+    - name: Display completion message
+      ansible.builtin.debug:
+        msg: |
+          ========================================
+          Restore completed!
+          
+          Restored from: {{ backup_file }}
+          Previous data saved to: {{ minecraft_data_dir }}_before_restore_{{ current_timestamp }}
+          
+          Server is now running.
+          ========================================

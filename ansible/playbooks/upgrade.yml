@@ -1,0 +1,174 @@
+# ============================================
+# playbooks/upgrade.yml - Minecraft バージョンアップ
+# ============================================
+#
+# 【使い方】
+# $ ansible-playbook -i inventory/hosts.yml playbooks/upgrade.yml \
+#     -e "new_version=1.21.5"
+#
+# 【処理フロー】
+# 1. バックアップ作成
+# 2. プレイヤーに通知
+# 3. サーバー停止
+# 4. バージョン更新
+# 5. サーバー起動
+# 6. ヘルスチェック
+
+---
+- name: Upgrade Minecraft Server
+  hosts: minecraft
+  become: true
+
+  vars_prompt:
+    - name: new_version
+      prompt: "Enter new Minecraft version (e.g., 1.21.5)"
+      private: false
+
+    - name: confirm_upgrade
+      prompt: "This will restart the server. Players will be disconnected. Continue? (yes/no)"
+      private: false
+
+  pre_tasks:
+    - name: Validate confirmation
+      ansible.builtin.fail:
+        msg: "Upgrade cancelled by user"
+      when: confirm_upgrade != "yes"
+
+    - name: Display upgrade info
+      ansible.builtin.debug:
+        msg: |
+          ========================================
+          Minecraft Version Upgrade
+          
+          Current: {{ minecraft_version }}
+          New:     {{ new_version }}
+          ========================================
+
+  tasks:
+    # ============================================
+    # 1. 事前バックアップ
+    # ============================================
+    - name: Create pre-upgrade backup
+      ansible.builtin.command:
+        cmd: "{{ minecraft_dir }}/backup.sh"
+      register: backup_result
+
+    - name: Display backup result
+      ansible.builtin.debug:
+        msg: "Pre-upgrade backup completed"
+
+    # ============================================
+    # 2. プレイヤーに通知
+    # ============================================
+    - name: Notify players - 5 minutes warning
+      ansible.builtin.command:
+        cmd: docker exec minecraft-server rcon-cli --password "{{ rcon_password }}" "say [Server] サーバーは5分後にアップグレードのため再起動します。"
+      ignore_errors: true
+
+    - name: Wait 2 minutes
+      ansible.builtin.pause:
+        minutes: 2
+
+    - name: Notify players - 3 minutes warning
+      ansible.builtin.command:
+        cmd: docker exec minecraft-server rcon-cli --password "{{ rcon_password }}" "say [Server] サーバーは3分後に再起動します。安全な場所に移動してください。"
+      ignore_errors: true
+
+    - name: Wait 2 minutes
+      ansible.builtin.pause:
+        minutes: 2
+
+    - name: Notify players - 1 minute warning
+      ansible.builtin.command:
+        cmd: docker exec minecraft-server rcon-cli --password "{{ rcon_password }}" "say [Server] サーバーは1分後に再起動します！"
+      ignore_errors: true
+
+    - name: Wait 1 minute
+      ansible.builtin.pause:
+        minutes: 1
+
+    # ============================================
+    # 3. サーバー停止
+    # ============================================
+    - name: Save world data
+      ansible.builtin.command:
+        cmd: docker exec minecraft-server rcon-cli --password "{{ rcon_password }}" "save-all"
+      ignore_errors: true
+
+    - name: Wait for save
+      ansible.builtin.pause:
+        seconds: 10
+
+    - name: Stop Minecraft server
+      community.docker.docker_compose_v2:
+        project_src: "{{ minecraft_dir }}"
+        state: absent
+
+    - name: Wait for container to stop
+      ansible.builtin.pause:
+        seconds: 10
+
+    # ============================================
+    # 4. バージョン更新
+    # ============================================
+    - name: Update .env file with new version
+      ansible.builtin.lineinfile:
+        path: "{{ minecraft_env_file }}"
+        regexp: '^MC_VERSION='
+        line: "MC_VERSION={{ new_version }}"
+
+    - name: Update docker-compose.yml
+      ansible.builtin.template:
+        src: roles/minecraft/templates/docker-compose.yml.j2
+        dest: "{{ minecraft_compose_file }}"
+        owner: ec2-user
+        group: ec2-user
+        mode: '0644'
+      vars:
+        minecraft_version: "{{ new_version }}"
+
+    - name: Pull new Docker image
+      community.docker.docker_image:
+        name: "{{ minecraft_image }}"
+        tag: "{{ minecraft_image_tag }}"
+        source: pull
+        force_source: yes
+
+    # ============================================
+    # 5. サーバー起動
+    # ============================================
+    - name: Start Minecraft server with new version
+      community.docker.docker_compose_v2:
+        project_src: "{{ minecraft_dir }}"
+        state: present
+
+    # ============================================
+    # 6. ヘルスチェック
+    # ============================================
+    - name: Wait for Minecraft to be healthy
+      community.docker.docker_container_info:
+        name: minecraft-server
+      register: container_info
+      until: container_info.container.State.Health.Status == "healthy"
+      retries: 20
+      delay: 15
+
+    # ============================================
+    # 完了
+    # ============================================
+    - name: Update inventory version
+      ansible.builtin.set_fact:
+        minecraft_version: "{{ new_version }}"
+
+    - name: Display completion message
+      ansible.builtin.debug:
+        msg: |
+          ========================================
+          ✅ Upgrade completed!
+          
+          New Version: {{ new_version }}
+          Server is now running.
+          
+          Note: If issues occur, restore from:
+          s3://{{ backup_s3_bucket }}/backups/
+          ========================================

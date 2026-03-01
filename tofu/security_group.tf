@@ -30,6 +30,23 @@ resource "aws_vpc_security_group_ingress_rule" "minecraft_game" {
 }
 
 # --------------------------------------------
+# Ingress ルール: Geyser ポート (19132)
+# --------------------------------------------
+resource "aws_vpc_security_group_ingress_rule" "minecraft_geyser" {
+  security_group_id = aws_security_group.minecraft.id
+  description       = "Geyser port for Bedrock clients"
+  from_port         = 19132
+  to_port           = 19132
+  ip_protocol       = "udp"    # ← TCPではなくUDP、ここが重要
+
+  cidr_ipv4 = "0.0.0.0/0"
+
+  tags = {
+    Name = "${local.name_prefix}-minecraft-geyser"
+  }
+}
+
+# --------------------------------------------
 # Ingress ルール: RCON ポート (25575)
 # --------------------------------------------
 resource "aws_vpc_security_group_ingress_rule" "minecraft_rcon" {

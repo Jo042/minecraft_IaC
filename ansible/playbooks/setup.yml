@@ -1,0 +1,44 @@
+# ============================================
+# playbooks/setup.yml - 初期セットアップ
+# ============================================
+---
+- name: Setup Minecraft Server
+  hosts: minecraft
+  become: true  # sudo で実行
+
+  # 事前タスク（ロールの前に実行）
+  pre_tasks:
+    - name: Display target host information
+      ansible.builtin.debug:
+        msg: |
+          ========================================
+          Setting up: {{ inventory_hostname }}
+          IP: {{ ansible_host }}
+          User: {{ ansible_user }}
+          ========================================
+      # inventory_hostname: インベントリで定義したホスト名
+      # ansible_host: 接続先IPアドレス
+
+    - name: Wait for system to be ready
+      ansible.builtin.wait_for_connection:
+        timeout: 300
+      # EC2 起動直後は接続できないことがあるので待機
+  
+  # 適用するロール
+  roles:
+    - role: common
+      tags: common
+    - role: docker
+      tags: docker
+
+  # 事後タスク（ロールの後に実行）
+  post_tasks:
+    - name: Display completion message
+      ansible.builtin.debug:
+        msg: |
+          ========================================
+          Setup completed!
+          
+          Next steps:
+          1. Run 'ansible-playbook playbooks/deploy.yml' to start Minecraft
+          ========================================

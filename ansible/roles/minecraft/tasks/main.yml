@@ -1,0 +1,8 @@
+---
+- name: Setup Minecraft
+  ansible.builtin.include_tasks: setup.yml
+  tags: setup
+
+- name: Configure backup
+  ansible.builtin.include_tasks: backup.yml
+  tags: backups

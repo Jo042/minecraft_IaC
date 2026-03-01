@@ -1,0 +1,61 @@
+- name: Set timezone to Asia/Tokyo
+  community.general.timezone:
+    name: Asia/Tokyo
+
+- name: Update all packages
+  ansible.builtin.dnf:
+    name: "*"
+    state: latest
+    update_cache: yes
+  # 全パッケージを最新に更新
+  # セキュリティパッチの適用
+
+- name: Install required packages
+  ansible.builtin.dnf:
+    name:
+      # curl は curl-minimal が既に入ってるので不要
+      - wget
+      - tar
+      - gzip
+      - unzip
+      - jq   # JSON処理
+      - htop # プロセスモニタ
+      - tmux # ターミナルマルチプレクサ
+      - git
+      - python3-pip  
+      - cronie
+    state: present
+
+- name: Check if AWS CLI is installed
+  ansible.builtin.command: aws --version
+  register: aws_cli_check
+  ignore_errors: true
+  changed_when: false
+  # register: 実行結果を変数に保存
+  # ignore_errors: エラーでも続行
+  # changed_when: false: このタスクは「変更」としてカウントしない
+
+
+- name: Display AWS CLI version
+  ansible.builtin.debug:
+    msg: "AWS CLI version: {{ aws_cli_check.stdout }}"
+  when: aws_cli_check.rc == 0
+  # when: 条件が true の時だけ実行
+  # rc = return code (0 = 成功)
+
+
+- name: Create minecraft directory
+  ansible.builtin.file:
+    path: "{{ minecraft_dir }}"
+    state: directory
+    owner: ec2-user
+    group: ec2-user
+    mode: '0755'
+
+- name: Create backup directory
+  ansible.builtin.file:
+    path: "{{ backup_dir }}"
+    state: directory
+    owner: ec2-user
+    group: ec2-user
+    mode: '0755'

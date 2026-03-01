@@ -1,0 +1,24 @@
+---
+- name: Start Minecraft Server
+  hosts: minecraft
+  become: true
+
+  tasks:
+    - name: Start Minecraft server
+      community.docker.docker_compose_v2:
+        project_src: "{{ minecraft_dir }}"
+        state: present
+
+    - name: Wait for Minecraft to be healthy
+      community.docker.docker_container_info:
+        name: minecraft-server
+      register: container_info
+      until: container_info.container.State.Health.Status == "healthy"
+      retries: 20
+      delay: 15
+
+    - name: Display message
+      ansible.builtin.debug:
+        msg: |
+          Minecraft server started
+          Connect to: {{ ansible_host }}:{{ minecraft_port_java }}

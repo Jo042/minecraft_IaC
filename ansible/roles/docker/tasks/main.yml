@@ -1,0 +1,62 @@
+# --------------------------------------------
+# Docker インストール
+# --------------------------------------------
+- name: Install Docker
+  ansible.builtin.dnf:
+    name: docker
+    state: present
+
+- name: Start and enable Docker service
+  ansible.builtin.systemd:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Add users to docker group
+  ansible.builtin.user:
+    name: "{{ item }}"
+    groups: docker
+    append: yes
+  loop: "{{ docker_users }}"
+
+# --------------------------------------------
+# Docker Compose Plugin インストール
+# --------------------------------------------
+- name: Download Docker Compose
+  ansible.builtin.get_url:
+    url: "https://github.com/docker/compose/releases/download/v{{ docker_compose_version }}/docker-compose-linux-x86_64"
+    dest: /usr/local/bin/docker-compose
+    mode: '0755'
+
+- name: Create Docker CLI plugins directory
+  ansible.builtin.file:
+    path: /usr/lib/docker/cli-plugins
+    state: directory
+    mode: '0755'
+
+- name: Symlink docker-compose as Docker CLI plugin
+  ansible.builtin.file:
+    src: /usr/local/bin/docker-compose
+    dest: /usr/lib/docker/cli-plugins/docker-compose
+    state: link
+
+# --------------------------------------------
+# 動作確認
+# --------------------------------------------
+- name: Verify Docker installation
+  ansible.builtin.command: docker --version
+  register: docker_version
+  changed_when: false
+
+- name: Display Docker version
+  ansible.builtin.debug:
+    msg: "{{ docker_version.stdout }}"
+
+- name: Verify Docker Compose plugin installation
+  ansible.builtin.command: docker compose version  # スペース区切り（plugin版）
+  register: compose_version
+  changed_when: false
+
+- name: Display Docker Compose version
+  ansible.builtin.debug:
+    msg: "{{ compose_version.stdout }}"

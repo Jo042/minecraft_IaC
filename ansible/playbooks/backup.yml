@@ -1,0 +1,45 @@
+# ============================================
+# playbooks/backup.yml - 手動バックアップ
+# ============================================
+#
+# 【使い方】
+# $ ansible-playbook -i inventory/hosts.yml playbooks/backup.yml
+
+---
+- name: Backup Minecraft World
+  hosts: minecraft
+  become: true
+
+  tasks:
+    - name: Display backup start
+      ansible.builtin.debug:
+        msg: |
+          ========================================
+          Starting Minecraft Backup
+          Target: {{ inventory_hostname }}
+          S3 Bucket: {{ backup_s3_bucket }}
+          ========================================
+
+    - name : Run backup script
+      ansible.builtin.command:
+        cmd: "{{ minecraft_dir }}/backup.sh"
+      register: backup_result
+      changed_when: true
+    
+    - name: Display backup output
+      ansible.builtin.debug:
+        msg: "{{ backup_result.stdout_lines }}"
+
+    - name: List recent backups in S3
+      ansible.builtin.command:
+        cmd: "aws s3 ls s3://{{ backup_s3_bucket }}/backups/ --region {{ aws_region }}"
+      register: s3_list
+      changed_when: false
+
+    - name: Display S3 backups
+      ansible.builtin.debug:
+        msg: |
+          ========================================
+          Recent backups in S3:
+          {{ s3_list.stdout }}
+          ========================================

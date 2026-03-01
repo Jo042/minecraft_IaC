@@ -1,0 +1,47 @@
+---
+# ============================================
+# パス設定
+# ============================================
+minecraft_dir: /opt/minecraft
+minecraft_data_dir: "{{ minecraft_dir }}/data"
+minecraft_compose_file: "{{ minecraft_dir }}/docker-compose.yml"
+minecraft_env_file: "{{ minecraft_dir }}/.env"
+
+# ============================================
+# Docker イメージ設定
+# ============================================
+minecraft_image: "itzg/minecraft-server"
+minecraft_image_tag: "latest"
+
+# ============================================
+# サーバー設定
+# ============================================
+minecraft_version: "1.21.4"
+minecraft_type: "VANILLA"
+minecraft_memory: "2G"
+minecraft_port: 25565
+
+# ============================================
+# ゲーム設定
+# ============================================
+minecraft_difficulty: "normal"
+minecraft_mode: "survival"
+minecraft_max_players: 20
+minecraft_view_distance: 10
+minecraft_motd: "Welcome to Minecraft Server!"
+minecraft_online_mode: "true"
+minecraft_enable_command_block: "true"
+minecraft_spawn_protection: 0
+
+# ============================================
+# RCON 設定
+# ============================================
+rcon_enabled: "true"
+rcon_port: 25575
+rcon_password: "change-me-in-production"
+
+# ============================================
+# システム設定
+# ============================================
+minecraft_service_name: minecraft
+minecraft_restart_policy: unless-stopped

@@ -1,0 +1,31 @@
+---
+- name: Deploy backup script
+  ansible.builtin.template:
+    src: backup.sh.j2
+    dest: "{{ minecraft_dir }}/backup.sh"
+    owner: ec2-user
+    group: ec2-user
+    mode: '0755'
+
+- name: Setup backup cron job
+  ansible.builtin.cron:
+    name: "Minecraft daily backup"
+    minute: "{{ backup_schedule.minute }}"
+    hour: "{{ backup_schedule.hour }}"
+    job: "{{ minecraft_dir }}/backup.sh >> /var/log/minecraft-backup.log 2>&1"
+    user: root
+
+- name: Setup log rotation for backup logs
+  ansible.builtin.copy:
+    dest: /etc/logrotate.d/minecraft-backup
+    content: |
+      /var/log/minecraft-backup.log {
+          daily
+          rotate 7
+          compress
+          delaycompress
+          missingok
+          notifempty
+          create 644 root root
+      }
+    mode: '0644'
