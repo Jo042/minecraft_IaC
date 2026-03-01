@@ -23,14 +23,16 @@ docker_compose_version: "2.24.0"
 # Minecraft 設定
 # ============================================
 minecraft_image: "itzg/minecraft-server"
+minecraft_image_tag: "latest"
 minecraft_type: "VANILLA"
+minecraft_mode: "survival"
 minecraft_difficulty: "normal"
 minecraft_max_players: 20
 minecraft_view_distance: 10
 minecraft_motd: "Welcome to Minecraft Server!"
 minecraft_online_mode: "true"
-
-
+minecraft_enable_command_block: "true"
+minecraft_spawn_protection: 0
 minecraft_version: "1.21.4"
 minecraft_memory: "2G"
 minecraft_port_java: 25565
