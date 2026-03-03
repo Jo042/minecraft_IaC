@@ -1,0 +1,134 @@
+# ============================================
+# deploy.yml - 本番環境へのデプロイ
+# ============================================
+
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'tofu/**'
+      - 'discord-bot/**'
+      - '.github/workflows/deploy.yml'
+  
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'デプロイ先環境'
+        required: true
+        default: 'prod'
+        type: choice
+        options:
+          - prod
+
+env:
+  TOFU_VERSION: '1.6.0'
+  PYTHON_VERSION: '3.11'
+  AWS_REGION: 'ap-northeast-1'
+
+jobs:
+  # ============================================
+  # ビルド
+  # ============================================
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Build Lambda Layer
+        run: |
+          mkdir -p discord-bot/layer/python
+          pip install \
+            --platform manylinux2014_x86_64 \
+            --target discord-bot/layer/python \
+            --implementation cp \
+            --python-version 3.11 \
+            --only-binary=:all: \
+            -r discord-bot/requirements.txt
+          
+          cd discord-bot/layer
+          zip -r ../dist/lambda_layer.zip .
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: lambda-artifacts
+          path: |
+            discord-bot/dist/
+            discord-bot/src/
+          retention-days: 1
+
+  # ============================================
+  # デプロイ
+  # ============================================
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: build
+    environment: production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: lambda-artifacts
+          path: discord-bot/
+
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: ${{ env.TOFU_VERSION }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Initialize
+        run: |
+          cd tofu
+          tofu init
+
+      - name: Apply
+        run: |
+          cd tofu
+          tofu apply -var-file=environments/prod.tfvars -auto-approve
+        env:
+          TF_VAR_discord_public_key: ${{ secrets.DISCORD_PUBLIC_KEY }}
+          TF_VAR_rcon_password: ${{ secrets.RCON_PASSWORD }}
+          TF_VAR_alert_email: ${{ secrets.ALERT_EMAIL }}
+
+  # ============================================
+  # Discord コマンド登録
+  # ============================================
+  register-commands:
+    name: Register Discord Commands
+    runs-on: ubuntu-latest
+    needs: deploy
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Register commands
+        run: |
+          chmod +x scripts/register-discord-commands.sh
+          ./scripts/register-discord-commands.sh
+        env:
+          DISCORD_APPLICATION_ID: ${{ secrets.DISCORD_APPLICATION_ID }}
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}

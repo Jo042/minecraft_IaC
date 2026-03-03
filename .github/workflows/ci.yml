@@ -1,0 +1,167 @@
+# ============================================
+# ci.yml - 継続的インテグレーション
+# ============================================
+
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - 'feature/**'
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+  pull_request:
+    branches:
+      - main
+
+env:
+  TOFU_VERSION: '1.6.0'
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  # ============================================
+  # OpenTofu の検証
+  # ============================================
+  tofu-validate:
+    name: Validate OpenTofu
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: ${{ env.TOFU_VERSION }}
+
+      - name: Check formatting
+        run: |
+          cd tofu
+          tofu fmt -check -recursive -diff
+        continue-on-error: true
+
+      - name: Initialize
+        run: |
+          cd tofu
+          tofu init -backend=false
+
+      - name: Validate
+        run: |
+          cd tofu
+          tofu validate
+
+  # ============================================
+  # Python コードの検証
+  # ============================================
+  python-lint:
+    name: Lint Python
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install linters
+        run: |
+          pip install flake8 black isort
+
+      - name: Run flake8
+        run: |
+          cd discord-bot
+          flake8 src/ --max-line-length=120 --ignore=E501,W503
+        continue-on-error: true
+
+      - name: Run black
+        run: |
+          cd discord-bot
+          black --check src/
+        continue-on-error: true
+
+  # ============================================
+  # Python テスト
+  # ============================================
+  python-test:
+    name: Test Python
+    runs-on: ubuntu-latest
+    needs: python-lint
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          cd discord-bot
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+
+      - name: Run tests
+        run: |
+          cd discord-bot
+          python -m pytest tests/ -v --cov=src --cov-report=xml
+        env:
+          DISCORD_PUBLIC_KEY: "test_key"
+          EC2_INSTANCE_ID: "i-test123"
+          AWS_REGION: "ap-northeast-1"
+
+  # ============================================
+  # Ansible Lint
+  # ============================================
+  ansible-lint:
+    name: Lint Ansible
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install ansible-lint
+        run: pip install ansible-lint
+
+      - name: Run ansible-lint
+        run: |
+          cd ansible
+          ansible-lint playbooks/ roles/
+        continue-on-error: true
+
+  # ============================================
+  # セキュリティスキャン
+  # ============================================
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run tfsec
+        uses: aquasecurity/tfsec-action@v1.0.0
+        with:
+          working_directory: tofu
+          soft_fail: true
