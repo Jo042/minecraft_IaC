@@ -5,12 +5,14 @@ Discord からのリクエストを受け取り、処理を振り分ける
 
 import json
 import os
+import boto3
 from nacl.signing import VerifyKey
 from nacl.exceptions import BadSignatureError
 
 from utils.discord_utils import (
     InteractionType,
     InteractionResponseType,
+    create_deferred_response,
     create_response,
     create_error_response
 )
@@ -18,6 +20,7 @@ from commands.server import handle_server_command
 
 # 環境変数
 DISCORD_PUBLIC_KEY = os.environ.get("DISCORD_PUBLIC_KEY")
+WORKER_FUNCTION_NAME = os.environ.get("WORKER_FUNCTION_NAME")
 
 def verify_signature(event: dict) -> bool:
     """
@@ -97,19 +100,22 @@ def lambda_handler(event: dict, context) -> dict:
     if interaction_type == InteractionType.APPLICATION_COMMAND:
         command_name = body.get("data", {}).get("name")
         print(f"Handling command: {command_name}")
-        
-        if command_name == "server":
-            response = handle_server_command(body)
-        else:
-            response = create_error_response(f"Unknown command: {command_name}")
-        
+
+        # Worker Lambda を非同期で起動（結果を待たない）
+        lambda_client = boto3.client("lambda")
+        lambda_client.invoke(
+            FunctionName=WORKER_FUNCTION_NAME,
+            InvocationType="Event",  # ← 非同期呼び出しのキー。"Event" = 待たない
+            Payload=json.dumps(body).encode()  # Discord の body をそのまま渡す
+        )
+
+        # Discord には即座に「考え中...」を返す
         return {
             "statusCode": 200,
             "headers": {"Content-Type": "application/json"},
-            "body": json.dumps(response)
+            "body": json.dumps(create_deferred_response())
         }
-    
-    # その他のインタラクション
+
     return {
         "statusCode": 400,
         "body": json.dumps({"error": "Unknown interaction type"})

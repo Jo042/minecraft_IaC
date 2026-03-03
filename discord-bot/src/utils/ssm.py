@@ -10,6 +10,7 @@ from typing import Dict, Any, List
 
 AWS_REGION = os.environ.get("AWS_REGION", "ap-northeast-1")
 EC2_INSTANCE_ID = os.environ.get("EC2_INSTANCE_ID")
+RCON_PASSWORD = os.environ.get("RCON_PASSWORD", "")
 
 def get_ssm_client():
     """SSM クライアントを取得"""
@@ -111,7 +112,7 @@ def get_minecraft_players() -> Dict[str, Any]:
         }
     """
     result = run_command([
-        'docker exec minecraft-server rcon-cli --password "$RCON_PASSWORD" list 2>/dev/null || echo "OFFLINE"'
+        f'docker exec minecraft-server rcon-cli --password "{RCON_PASSWORD}" list 2>/dev/null || echo "OFFLINE"'
     ])
 
     if not result["success"]:
@@ -131,6 +132,34 @@ def get_minecraft_players() -> Dict[str, Any]:
             "online": False,
             "player_count": 0,
             "max_players": 0,
+            "players": []
+        }
+    
+    try:
+        # "There are X of a max of Y players online: ..."
+        parts = output.split("players online:")
+        count_part = parts[0]  # "There are 1 of a max of 20 "
+        numbers = [int(s) for s in count_part.split() if s.isdigit()]
+        player_count = numbers[0]  # 1
+        max_players = numbers[1]   # 20
+
+        players = []
+        if len(parts) > 1 and parts[1].strip():
+            players = [p.strip() for p in parts[1].strip().split(",")]
+
+        return {
+            "success": True,
+            "online": True,
+            "player_count": player_count,
+            "max_players": max_players,
+            "players": players
+        }
+    except Exception:
+        return {
+            "success": True,
+            "online": True,
+            "player_count": 0,
+            "max_players": 20,
             "players": []
         }
     
@@ -187,14 +216,10 @@ def safe_stop_minecraft() -> Dict[str, Any]:
         }
     """
     commands = [
-        # プレイヤーに通知
-        'docker exec minecraft-server rcon-cli --password "$RCON_PASSWORD" "say [Server] サーバーを停止します。" || true',
-        # ワールド保存
-        'docker exec minecraft-server rcon-cli --password "$RCON_PASSWORD" "save-all" || true',
-        # 少し待機
+        f'docker exec minecraft-server rcon-cli --password "{RCON_PASSWORD}" "say [Server] サーバーを停止します。" || true',
+        f'docker exec minecraft-server rcon-cli --password "{RCON_PASSWORD}" "save-all" || true',
         'sleep 5',
-        # コンテナ停止
-        'cd /opt/minecraft && docker-compose down'
+        'cd /opt/minecraft && docker compose down'
     ]
     
     result = run_command(commands, timeout_seconds=120)

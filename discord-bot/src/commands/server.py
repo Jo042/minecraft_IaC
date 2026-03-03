@@ -19,7 +19,7 @@ from utils.discord_utils import (
 from utils.ec2 import (
     get_instance_status,
     start_instance,
-    stop_instance
+    stop_instance,
 )
 from utils.ssm import (
     get_minecraft_players,
@@ -194,7 +194,7 @@ def handle_status(options: list) -> dict:
             if players["online"]:
                 player_info = f"{players['player_count']}/{players['max_players']} 人"
                 if players["players"]:
-                    player_info += f"\n👥 {', '.join(players['players'])}"
+                    player_info += f"\n {', '.join(players['players'])}"
                 fields.append({"name": "プレイヤー", "value": player_info, "inline": False})
                 mc_status = "🟢 オンライン"
             else:
