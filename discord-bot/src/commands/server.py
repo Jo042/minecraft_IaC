@@ -20,6 +20,8 @@ from utils.ec2 import (
     get_instance_status,
     start_instance,
     stop_instance,
+    wait_for_instance_running, 
+    wait_for_instance_stopped   
 )
 from utils.ssm import (
     get_minecraft_players,
@@ -90,16 +92,32 @@ def handle_start(options: list) -> dict:
         
         result = start_instance()
 
-        if result["success"]:
-            return create_embed_response(
-                title="--サーバー起動開始--",
-                description="Minecraft サーバーを起動しています...\n\n"
-                           "起動完了まで 2-3 分かかります。\n"
-                           "`/server status` で状態を確認してください。",
-                color=Colors.GREEN
-            )
-        else:
+        if not result["success"]:
             return create_error_response(result["message"])
+
+        # EC2 が running になるまで待つ（最大5分）
+        running = wait_for_instance_running(timeout=300)
+
+        if not running:
+            return create_embed_response(
+                title="起動タイムアウト",
+                description="起動処理中です。しばらくお待ちください。\n`/server status` で状態を確認してください。",
+                color=Colors.YELLOW
+            )
+        
+        # running になったら最新の IP を取得
+        new_status = get_instance_status()
+        ip = new_status.get("public_ip", "取得中...")
+
+        return create_embed_response(
+            title="🟢 サーバー起動完了",
+            description="Minecraft サーバーに接続できます！",
+            color=Colors.GREEN,
+            fields=[
+                {"name": "接続先", "value": f"`{ip}:{MINECRAFT_PORT}`", "inline": False},
+                {"name": "状態", "value": "🟢 Running", "inline": True}
+            ]
+        )
         
     except Exception as e:
         print(f"Error in handle_start: {e}")
@@ -148,16 +166,28 @@ def handle_stop(options: list) -> dict:
             return create_error_response(mc_stop_result["message"])
         
         result = stop_instance()
-        
-        if result["success"]:
-            return create_embed_response(
-                title="🛑 サーバー停止開始",
-                description="サーバーを停止しています...\n\n"
-                           "完全に停止するまで 1-2 分かかります。",
-                color=Colors.GREEN
-            )
-        else:
+        if not result["success"]:
             return create_error_response(result["message"])
+        
+        # EC2 が stopped になるまで待つ（最大5分）
+        stopped = wait_for_instance_stopped(timeout=300)
+
+        if not stopped:
+            return create_embed_response(
+                title="停止タイムアウト",
+                description="停止処理中です。しばらくお待ちください。\n`/server status` で状態を確認してください。",
+                color=Colors.YELLOW
+            )
+        
+        return create_embed_response(
+            title="🛑 停止完了",
+            description="サーバーが完全に停止しました。",
+            color=Colors.RED,
+            fields=[
+                {"name": "状態", "value": "🔴 Stopped", "inline": True}
+            ]
+        )
+
     
     except Exception as e:
         print(f"Error in handle_stop: {e}")
