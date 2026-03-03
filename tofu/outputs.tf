@@ -83,6 +83,26 @@ output "iam_role_arn" {
 }
 
 # --------------------------------------------
+# Discord Bot 関連
+# --------------------------------------------
+
+output "discord_bot_function_name" {
+  description = "Discord Bot Lambda 関数名"
+  value       = aws_lambda_function.discord_bot.function_name
+}
+
+output "discord_bot_function_url" {
+  description = "Discord Bot のエンドポイント URL"
+  value       = aws_lambda_function_url.discord_bot.function_url
+}
+
+output "discord_bot_invoke_arn" {
+  description = "Discord Bot Lambda の Invoke ARN"
+  value       = aws_lambda_function.discord_bot.invoke_arn
+}
+
+
+# --------------------------------------------
 # 便利な出力
 # --------------------------------------------
 
