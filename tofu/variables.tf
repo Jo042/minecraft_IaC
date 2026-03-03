@@ -107,3 +107,26 @@ variable "backup_retention_days" {
   type        = number
   default     = 30
 }
+
+# --------------------------------------------
+# Discord Bot 設定
+# --------------------------------------------
+
+variable "discord_public_key" {
+  description = "Discord Application の Public Key"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "discord_application_id" {
+  description = "Discord Application ID"
+  type        = string
+  default     = ""
+}
+
+variable "minecraft_port" {
+  description = "Minecraft サーバーのポート"
+  type        = number
+  default     = 25565
+}
