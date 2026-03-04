@@ -13,25 +13,23 @@ from utils.discord_utils import (
     InteractionType,
     InteractionResponseType,
     create_deferred_response,
-    create_response,
-    create_error_response
 )
-from commands.server import handle_server_command
 
 # 環境変数
 DISCORD_PUBLIC_KEY = os.environ.get("DISCORD_PUBLIC_KEY")
 WORKER_FUNCTION_NAME = os.environ.get("WORKER_FUNCTION_NAME")
 
+
 def verify_signature(event: dict) -> bool:
     """
     Discord からのリクエストの署名を検証
-    
+
     Discord は全てのリクエストに署名を付与する。
     この署名を検証することで、リクエストが本物の Discord からのものか確認できる。
-    
+
     Args:
         event: API Gateway から渡されるイベント
-    
+
     Returns:
         True: 署名が有効
         False: 署名が無効
@@ -40,13 +38,10 @@ def verify_signature(event: dict) -> bool:
         signature = event["headers"].get("x-signature-ed25519", "")
         timestamp = event["headers"].get("x-signature-timestamp", "")
         body = event.get("body", "")
-        
+
         # 公開鍵で署名を検証
         verify_key = VerifyKey(bytes.fromhex(DISCORD_PUBLIC_KEY))
-        verify_key.verify(
-            f"{timestamp}{body}".encode(),
-            bytes.fromhex(signature)
-        )
+        verify_key.verify(f"{timestamp}{body}".encode(), bytes.fromhex(signature))
         return True
     except BadSignatureError:
         return False
@@ -58,44 +53,38 @@ def verify_signature(event: dict) -> bool:
 def lambda_handler(event: dict, context) -> dict:
     """
     Lambda のエントリーポイント
-    
+
     Args:
         event: API Gateway からのイベント
         context: Lambda コンテキスト
-    
+
     Returns:
         API Gateway 形式のレスポンス
     """
     print(f"Received event: {json.dumps(event)}")
-    
+
     # 署名検証
     if not verify_signature(event):
         print("Invalid signature")
-        return {
-            "statusCode": 401,
-            "body": json.dumps({"error": "Invalid signature"})
-        }
-    
+        return {"statusCode": 401, "body": json.dumps({"error": "Invalid signature"})}
+
     # リクエストボディをパース
     try:
         body = json.loads(event.get("body", "{}"))
     except json.JSONDecodeError:
-        return {
-            "statusCode": 400,
-            "body": json.dumps({"error": "Invalid JSON"})
-        }
-    
+        return {"statusCode": 400, "body": json.dumps({"error": "Invalid JSON"})}
+
     interaction_type = body.get("type")
-    
+
     # PING（Discord からの疎通確認）
     if interaction_type == InteractionType.PING:
         print("Responding to PING")
         return {
             "statusCode": 200,
             "headers": {"Content-Type": "application/json"},
-            "body": json.dumps({"type": InteractionResponseType.PONG})
+            "body": json.dumps({"type": InteractionResponseType.PONG}),
         }
-    
+
     # スラッシュコマンド
     if interaction_type == InteractionType.APPLICATION_COMMAND:
         command_name = body.get("data", {}).get("name")
@@ -106,17 +95,17 @@ def lambda_handler(event: dict, context) -> dict:
         lambda_client.invoke(
             FunctionName=WORKER_FUNCTION_NAME,
             InvocationType="Event",  # ← 非同期呼び出しのキー。"Event" = 待たない
-            Payload=json.dumps(body).encode()  # Discord の body をそのまま渡す
+            Payload=json.dumps(body).encode(),  # Discord の body をそのまま渡す
         )
 
         # Discord には即座に「考え中...」を返す
         return {
             "statusCode": 200,
             "headers": {"Content-Type": "application/json"},
-            "body": json.dumps(create_deferred_response())
+            "body": json.dumps(create_deferred_response()),
         }
 
     return {
         "statusCode": 400,
-        "body": json.dumps({"error": "Unknown interaction type"})
+        "body": json.dumps({"error": "Unknown interaction type"}),
     }
