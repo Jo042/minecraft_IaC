@@ -16,12 +16,19 @@ availability_zone  = "ap-northeast-1a"
 # EC2
 instance_type = "t3.medium"
 volume_size   = 30
-# key_name    = "your-key-pair-name"  # SSM使用時は不要
 
 # Minecraft
 minecraft_version = "1.21.4"
-minecraft_memory  = "4G"
-# rcon_password   = "your-secure-password"  # 本番用は強力なパスワード
+minecraft_memory  = "2G"
 
 # S3
 backup_retention_days = 30
+
+# CloudWatch
+alert_email             = ""
+billing_alarm_threshold = 3
+
+# Discord Bot
+discord_public_key     = ""
+discord_application_id = ""
+rcon_password = ""
