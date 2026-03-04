@@ -19,6 +19,6 @@
 
     - name: Display message
       ansible.builtin.debug:
-        msg: |
+        msg: |-
           Minecraft server started
           Connect to: {{ ansible_host }}:{{ minecraft_port_java }}

@@ -1,3 +1,6 @@
 warn_list: []
-roles_path:
-  - ansible/roles
+skip_list:
+  - var-naming[no-role-prefix]  # 既存コードとの互換性のため
+  - ignore-errors               # Minecraftコマンドは失敗が想定されるため
+  - no-changed-when             # 同上
+  - package-latest              # 初期セットアップ時は最新版が望ましいため

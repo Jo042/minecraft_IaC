@@ -70,7 +70,7 @@
         state: directory
         owner: ec2-user
         group: ec2-user
-        mode: '0755'
+        mode: "0755"
 
     # --------------------------------------------
     # S3 からダウンロード
@@ -87,7 +87,7 @@
       ansible.builtin.unarchive:
         src: "{{ backup_dir }}/{{ backup_file }}"
         dest: "{{ minecraft_data_dir }}"
-        remote_src: yes
+        remote_src: true
         owner: ec2-user
         group: ec2-user
 
@@ -109,12 +109,12 @@
 
     - name: Display completion message
       ansible.builtin.debug:
-        msg: |
+        msg: |-
           ========================================
           Restore completed!
-          
+
           Restored from: {{ backup_file }}
           Previous data saved to: {{ minecraft_data_dir }}_before_restore_{{ current_timestamp }}
-          
+
           Server is now running.
           ========================================

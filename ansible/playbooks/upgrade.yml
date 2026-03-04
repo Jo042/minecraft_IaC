@@ -39,7 +39,7 @@
         msg: |
           ========================================
           Minecraft Version Upgrade
-          
+
           Current: {{ minecraft_version }}
           New:     {{ new_version }}
           ========================================
@@ -114,7 +114,7 @@
     - name: Update .env file with new version
       ansible.builtin.lineinfile:
         path: "{{ minecraft_env_file }}"
-        regexp: '^MC_VERSION='
+        regexp: "^MC_VERSION="
         line: "MC_VERSION={{ new_version }}"
 
     - name: Update docker-compose.yml
@@ -123,7 +123,7 @@
         dest: "{{ minecraft_compose_file }}"
         owner: ec2-user
         group: ec2-user
-        mode: '0644'
+        mode: "0644"
       vars:
         minecraft_version: "{{ new_version }}"
 
@@ -132,7 +132,7 @@
         name: "{{ minecraft_image }}"
         tag: "{{ minecraft_image_tag }}"
         source: pull
-        force_source: yes
+        force_source: true
 
     # ============================================
     # 5. サーバー起動
@@ -162,13 +162,13 @@
 
     - name: Display completion message
       ansible.builtin.debug:
-        msg: |
+        msg: |-
           ========================================
           ✅ Upgrade completed!
-          
+
           New Version: {{ new_version }}
           Server is now running.
-          
+
           Note: If issues occur, restore from:
           s3://{{ backup_s3_bucket }}/backups/
           ========================================

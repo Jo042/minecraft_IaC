@@ -17,7 +17,7 @@
   roles:
     - role: minecraft
       tags: minecraft
-  
+
   post_tasks:
     - name: Get server IP
       ansible.builtin.set_fact:
@@ -25,14 +25,14 @@
 
     - name: Display connection info
       ansible.builtin.debug:
-        msg: |
+        msg: |-
           ========================================
           Deployment completed!
-          
+
           Minecraft Server: {{ server_ip }}:{{ minecraft_port }}
           RCON Port: {{ rcon_port }}
           Version: {{ minecraft_version }}
-          
+
           Commands:
           - Check status: docker ps
           - View logs: docker logs -f minecraft-server

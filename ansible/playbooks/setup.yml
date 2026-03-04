@@ -4,7 +4,7 @@
 ---
 - name: Setup Minecraft Server
   hosts: minecraft
-  become: true  # sudo で実行
+  become: true # sudo で実行
 
   # 事前タスク（ロールの前に実行）
   pre_tasks:
@@ -22,8 +22,8 @@
     - name: Wait for system to be ready
       ansible.builtin.wait_for_connection:
         timeout: 300
-      # EC2 起動直後は接続できないことがあるので待機
-  
+  # EC2 起動直後は接続できないことがあるので待機
+
   # 適用するロール
   roles:
     - role: common
@@ -34,10 +34,10 @@
   post_tasks:
     - name: Display completion message
       ansible.builtin.debug:
-        msg: |
+        msg: |-
           ========================================
           Setup completed!
-          
+
           Next steps:
           1. Run 'ansible-playbook playbooks/deploy.yml' to start Minecraft
           ========================================

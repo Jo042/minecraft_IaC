@@ -20,12 +20,12 @@
           S3 Bucket: {{ backup_s3_bucket }}
           ========================================
 
-    - name : Run backup script
+    - name: Run backup script
       ansible.builtin.command:
         cmd: "{{ minecraft_dir }}/backup.sh"
       register: backup_result
       changed_when: true
-    
+
     - name: Display backup output
       ansible.builtin.debug:
         msg: "{{ backup_result.stdout_lines }}"
@@ -38,7 +38,7 @@
 
     - name: Display S3 backups
       ansible.builtin.debug:
-        msg: |
+        msg: |-
           ========================================
           Recent backups in S3:
           {{ s3_list.stdout }}
