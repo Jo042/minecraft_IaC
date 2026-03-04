@@ -48,15 +48,15 @@ jobs:
           mkdir -p discord-bot/dist
           touch discord-bot/dist/lambda_layer.zip
 
-            - name: Initialize
-              run: |
-                cd tofu
-                tofu init -backend=false
+      - name: Initialize
+        run: |
+          cd tofu
+          tofu init -backend=false
 
-            - name: Validate
-              run: |
-                cd tofu
-                tofu validate
+      - name: Validate
+        run: |
+          cd tofu
+          tofu validate
 
   # ============================================
   # Python コードの検証
