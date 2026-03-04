@@ -40,6 +40,9 @@ make discord-setup
 
 Discord で `/server status` を実行して動作確認！
 
+> 💡 **Makefile を使わず手動でセットアップしたい場合**  
+> [手動セットアップガイド](docs/manual-setup-guide.md) を参照してください。
+
 ## Discord コマンド
 
 | コマンド | 説明 |
@@ -65,6 +68,7 @@ Discord で `/server status` を実行して動作確認！
 | ドキュメント | 内容 |
 |--------------|------|
 | [セットアップガイド](docs/setup-guide.md) | 詳細な手順説明 |
+| [手動セットアップ](docs/manual-setup-guide.md) | Makefile を使わない手順 |
 | [AWS 設定](docs/aws-setup.md) | AWS アカウント・IAM 設定 |
 | [Discord 設定](docs/discord-setup.md) | Discord Bot の作成方法 |
 | [運用ガイド](docs/operation-guide.md) | 日常の運用方法 |
