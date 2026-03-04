@@ -9,7 +9,7 @@
 # tfvarsには変数の値が入る（パスワード等）
 *.tfvars
 !*.tfvars.example
-
+!ci.tfvars
 # OpenTofu/Terraformの作業ディレクトリ
 .terraform/
 .tofu/

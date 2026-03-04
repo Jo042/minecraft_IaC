@@ -1,0 +1,23 @@
+# 基本設定
+project_name = "minecraft"
+environment  = "prod"
+aws_region   = "ap-northeast-1"
+
+# ネットワーク
+vpc_cidr           = "10.0.0.0/16"
+public_subnet_cidr = "10.0.1.0/24"
+availability_zone  = "ap-northeast-1a"
+
+# EC2
+instance_type = "t3.medium"
+volume_size   = 30
+
+# Minecraft
+minecraft_version = "1.21.4"
+minecraft_memory  = "2G"
+
+# S3
+backup_retention_days = 30
+
+# CloudWatch
+billing_alarm_threshold = 3
