@@ -18,11 +18,12 @@ terraform {
     }
   }
 
-  # tfstate の保存先（後で S3 に変更可能）
-  # backend "s3" {
-  #   bucket = "your-tfstate-bucket"
-  #   key    = "minecraft/terraform.tfstate"
-  #   region = "ap-northeast-1"
+  # tfstate の保存先
+  backend "s3" {
+    bucket = "minecraft-prod-tfstate"
+    key    = "minecraft/terraform.tfstate"
+    region = "ap-northeast-1"
+  }
 }
 
 # --------------------------------------------
