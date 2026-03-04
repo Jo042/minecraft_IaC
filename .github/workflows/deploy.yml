@@ -85,6 +85,15 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: lambda-artifacts
+   
+      - name: Debug - List files   
+        run: |
+          echo "=== workspace root ==="
+          ls -la
+          echo "=== discord-bot/ ==="
+          ls -la discord-bot/ || echo "discord-bot not found"
+          echo "=== discord-bot/dist/ ==="
+          ls -la discord-bot/dist/ || echo "discord-bot/dist not found"
 
       - name: Setup OpenTofu
         uses: opentofu/setup-opentofu@v1
