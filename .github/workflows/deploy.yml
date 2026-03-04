@@ -48,6 +48,7 @@ jobs:
       - name: Build Lambda Layer
         run: |
           mkdir -p discord-bot/layer/python
+          mkdir -p discord-bot/dist
           pip install \
             --platform manylinux2014_x86_64 \
             --target discord-bot/layer/python \
