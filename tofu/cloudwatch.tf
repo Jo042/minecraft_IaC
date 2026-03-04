@@ -26,12 +26,12 @@ resource "aws_cloudwatch_metric_alarm" "cpu_high" {
   alarm_name          = "${local.name_prefix}-cpu-high"
   alarm_description   = "EC2 の CPU 使用率が高くなっています"
   comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = 3      # 3回連続で
+  evaluation_periods  = 3 # 3回連続で
   metric_name         = "CPUUtilization"
   namespace           = "AWS/EC2"
-  period              = 300     # 5分間の平均
+  period              = 300 # 5分間の平均
   statistic           = "Average"
-  threshold           = 80      # 80% を超えたら
+  threshold           = 80 # 80% を超えたら
 
   dimensions = {
     InstanceId = aws_instance.minecraft.id
@@ -78,7 +78,7 @@ resource "aws_cloudwatch_metric_alarm" "lambda_errors" {
   namespace           = "AWS/Lambda"
   period              = 300
   statistic           = "Sum"
-  threshold           = 5  # 5分間に5回以上エラー
+  threshold           = 5 # 5分間に5回以上エラー
 
   dimensions = {
     FunctionName = aws_lambda_function.discord_bot.function_name
@@ -102,7 +102,7 @@ resource "aws_cloudwatch_metric_alarm" "lambda_duration" {
   namespace           = "AWS/Lambda"
   period              = 300
   statistic           = "Average"
-  threshold           = 10000  # 10秒
+  threshold           = 10000 # 10秒
 
   dimensions = {
     FunctionName = aws_lambda_function.discord_bot.function_name
@@ -126,7 +126,7 @@ resource "aws_cloudwatch_metric_alarm" "billing" {
   evaluation_periods  = 1
   metric_name         = "EstimatedCharges"
   namespace           = "AWS/Billing"
-  period              = 21600  # 6時間
+  period              = 21600 # 6時間
   statistic           = "Maximum"
   threshold           = var.billing_alarm_threshold
 
@@ -165,7 +165,7 @@ resource "aws_cloudwatch_dashboard" "minecraft" {
           stat   = "Average"
         }
       },
-      
+
       # EC2 ネットワーク
       {
         type   = "metric"
@@ -184,7 +184,7 @@ resource "aws_cloudwatch_dashboard" "minecraft" {
           stat   = "Sum"
         }
       },
-      
+
       # Lambda 呼び出し回数
       {
         type   = "metric"
@@ -202,7 +202,7 @@ resource "aws_cloudwatch_dashboard" "minecraft" {
           stat   = "Sum"
         }
       },
-      
+
       # Lambda エラー
       {
         type   = "metric"
@@ -220,7 +220,7 @@ resource "aws_cloudwatch_dashboard" "minecraft" {
           stat   = "Sum"
         }
       },
-      
+
       # Lambda 実行時間
       {
         type   = "metric"
@@ -238,7 +238,7 @@ resource "aws_cloudwatch_dashboard" "minecraft" {
           stat   = "Average"
         }
       },
-      
+
       # アラーム状態
       {
         type   = "alarm"
@@ -247,7 +247,7 @@ resource "aws_cloudwatch_dashboard" "minecraft" {
         width  = 24
         height = 4
         properties = {
-          title  = "アラーム状態"
+          title = "アラーム状態"
           alarms = [
             aws_cloudwatch_metric_alarm.cpu_high.arn,
             aws_cloudwatch_metric_alarm.status_check.arn,
@@ -279,7 +279,7 @@ resource "aws_cloudwatch_log_group" "minecraft" {
 resource "aws_cloudwatch_log_metric_filter" "player_joined" {
   name           = "${local.name_prefix}-player-joined"
   log_group_name = aws_cloudwatch_log_group.minecraft.name
-  pattern = "\"joined the game\""
+  pattern        = "\"joined the game\""
 
   metric_transformation {
     name      = "PlayerJoined"
@@ -292,7 +292,7 @@ resource "aws_cloudwatch_log_metric_filter" "player_joined" {
 resource "aws_cloudwatch_log_metric_filter" "player_left" {
   name           = "${local.name_prefix}-player-left"
   log_group_name = aws_cloudwatch_log_group.minecraft.name
-  pattern = "\"left the game\""
+  pattern        = "\"left the game\""
 
   metric_transformation {
     name      = "PlayerLeft"
