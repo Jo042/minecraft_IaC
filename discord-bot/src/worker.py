@@ -2,19 +2,21 @@
 worker.py（Worker）
 役割：実際の処理（EC2/SSM） → Discord Webhook に結果を POST
 """
+
 import json
 import os
 import urllib.request
-import urllib.error 
+import urllib.error
 from commands.server import (
     handle_start,
     handle_stop,
     handle_status,
     handle_backup,
-    handle_logs
+    handle_logs,
 )
 
 DISCORD_APPLICATION_ID = os.environ.get("DISCORD_APPLICATION_ID")
+
 
 def send_followup_message(token: str, content: dict) -> None:
     """
@@ -29,11 +31,10 @@ def send_followup_message(token: str, content: dict) -> None:
         f"{DISCORD_APPLICATION_ID}/{token}/messages/@original"
     )
 
-    
     print(f"APP_ID: {DISCORD_APPLICATION_ID}")  # ← 追加
-    print(f"URL: {url}")                         # ← 追加
-    print(f"Content: {json.dumps(content)}")     # ← 追加
-    
+    print(f"URL: {url}")  # ← 追加
+    print(f"Content: {json.dumps(content)}")  # ← 追加
+
     # content は discord_utils の response["data"] を渡す
     data = json.dumps(content).encode("utf-8")
 
@@ -43,16 +44,16 @@ def send_followup_message(token: str, content: dict) -> None:
         method="PATCH",  # ← 上書きなので PATCH
         headers={
             "Content-Type": "application/json",
-            "User-Agent": "DiscordBot (https://github.com/minecraft-bot, 1.0.0)"
-        }
+            "User-Agent": "DiscordBot (https://github.com/minecraft-bot, 1.0.0)",
+        },
     )
 
     try:
         with urllib.request.urlopen(req) as res:
             print(f"Discord webhook response: {res.status}")
     except urllib.error.HTTPError as e:
-        error_body = e.read().decode()  
-        print(f"HTTP {e.code}: {error_body}")  
+        error_body = e.read().decode()
+        print(f"HTTP {e.code}: {error_body}")
     except Exception as e:
         print(f"Failed to send followup: {e}")
 
@@ -75,11 +76,11 @@ def lambda_handler(event: dict, context) -> None:
 
     # サブコマンドを処理（server.py の関数をそのまま使う）
     handlers = {
-        "start":  handle_start,
-        "stop":   handle_stop,
+        "start": handle_start,
+        "stop": handle_stop,
         "status": handle_status,
         "backup": handle_backup,
-        "logs":   handle_logs
+        "logs": handle_logs,
     }
 
     handler = handlers.get(subcommand)
@@ -87,12 +88,9 @@ def lambda_handler(event: dict, context) -> None:
     if handler:
         subcommand_options = options[0].get("options", []) if options else []
         response = handler(subcommand_options)
-    
+
     else:
-        response = {
-            "type": 4,
-            "data": {"content": f"Unknown subcommand: {subcommand}"}
-        }
+        response = {"type": 4, "data": {"content": f"Unknown subcommand: {subcommand}"}}
 
     # response["data"] を Discord に送って「考え中...」を上書き
     send_followup_message(token, response.get("data", {}))

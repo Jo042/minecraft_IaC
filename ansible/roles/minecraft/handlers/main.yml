@@ -1,10 +1,9 @@
 ---
 - name: Reload systemd
   ansible.builtin.systemd:
-    daemon_reload: yes
+    daemon_reload: true
 
 - name: Restart minecraft
   community.docker.docker_compose_v2:
     project_src: "{{ minecraft_dir }}"
-    state: present
-    restarted: true
+    state: restarted

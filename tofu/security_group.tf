@@ -37,7 +37,7 @@ resource "aws_vpc_security_group_ingress_rule" "minecraft_geyser" {
   description       = "Geyser port for Bedrock clients"
   from_port         = 19132
   to_port           = 19132
-  ip_protocol       = "udp"    # ← TCPではなくUDP、ここが重要
+  ip_protocol       = "udp" # ← TCPではなくUDP、ここが重要
 
   cidr_ipv4 = "0.0.0.0/0"
 

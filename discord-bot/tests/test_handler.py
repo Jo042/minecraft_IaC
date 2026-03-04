@@ -51,8 +51,9 @@ class TestHandler:
 class TestServerCommands:
     """サーバーコマンドのテスト"""
     
+    @patch("src.commands.server.get_minecraft_players")
     @patch("src.commands.server.get_instance_status")
-    def test_status_command(self, mock_status):
+    def test_status_command(self, mock_status, mock_players):
         """status コマンドが正しく動作すること"""
         from src.commands.server import handle_status
         
@@ -61,6 +62,13 @@ class TestServerCommands:
             "state": "running",
             "public_ip": "54.1.2.3",
             "instance_type": "t3.medium"
+        }
+
+        mock_players.return_value = {
+            "online": True,
+            "player_count": 1,
+            "max_players": 20,
+            "players": ["Steve"]
         }
         
         response = handle_status([])

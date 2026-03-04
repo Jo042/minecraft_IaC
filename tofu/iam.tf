@@ -40,8 +40,8 @@ resource "aws_iam_role_policy" "name" {
           "s3:GetBucketLocation"
         ]
         Resource = [
-            aws_s3_bucket.backup.arn,
-            aws_s3_bucket.ssm.arn
+          aws_s3_bucket.backup.arn,
+          aws_s3_bucket.ssm.arn
         ]
       },
       {

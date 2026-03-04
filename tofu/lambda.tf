@@ -111,11 +111,11 @@ resource "aws_lambda_function" "discord_bot" {
 
   environment {
     variables = {
-      DISCORD_PUBLIC_KEY = var.discord_public_key
-      EC2_INSTANCE_ID    = aws_instance.minecraft.id
-      AWS_REGION_NAME    = var.aws_region
-      MINECRAFT_PORT     = tostring(var.minecraft_port)
-      RCON_PASSWORD      = var.rcon_password
+      DISCORD_PUBLIC_KEY   = var.discord_public_key
+      EC2_INSTANCE_ID      = aws_instance.minecraft.id
+      AWS_REGION_NAME      = var.aws_region
+      MINECRAFT_PORT       = tostring(var.minecraft_port)
+      RCON_PASSWORD        = var.rcon_password
       WORKER_FUNCTION_NAME = aws_lambda_function.discord_bot_worker.function_name
     }
   }
@@ -136,9 +136,9 @@ resource "aws_lambda_function" "discord_bot_worker" {
   handler = "worker.lambda_handler"
   runtime = "python3.11"
 
-  role = aws_iam_role.discord_bot.arn  # ← 同じ IAM ロールを使い回す
+  role = aws_iam_role.discord_bot.arn # ← 同じ IAM ロールを使い回す
 
-  timeout     = 300   
+  timeout     = 300
   memory_size = 256
 
   layers = [
@@ -147,11 +147,11 @@ resource "aws_lambda_function" "discord_bot_worker" {
 
   environment {
     variables = {
-      EC2_INSTANCE_ID       = aws_instance.minecraft.id
-      AWS_REGION_NAME       = var.aws_region
-      MINECRAFT_PORT        = tostring(var.minecraft_port)
-      RCON_PASSWORD         = var.rcon_password
-      DISCORD_APPLICATION_ID = var.discord_application_id  # ← 新規変数（後述）
+      EC2_INSTANCE_ID        = aws_instance.minecraft.id
+      AWS_REGION_NAME        = var.aws_region
+      MINECRAFT_PORT         = tostring(var.minecraft_port)
+      RCON_PASSWORD          = var.rcon_password
+      DISCORD_APPLICATION_ID = var.discord_application_id # ← 新規変数（後述）
     }
   }
 
@@ -192,7 +192,7 @@ resource "aws_lambda_layer_version" "discord_bot_deps" {
   filename            = "${path.module}/../discord-bot/dist/lambda_layer.zip"
   layer_name          = "${local.name_prefix}-discord-bot-deps"
   compatible_runtimes = ["python3.11"]
-  
+
   source_code_hash = filebase64sha256("${path.module}/../discord-bot/dist/lambda_layer.zip")
 
   description = "Dependencies for Discord Bot (PyNaCl, boto3, etc.)"

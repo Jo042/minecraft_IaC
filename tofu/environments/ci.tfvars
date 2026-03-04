@@ -1,8 +1,3 @@
-# ============================================
-# prod.tfvars.example
-# ============================================
-# 
-
 # 基本設定
 project_name = "minecraft"
 environment  = "prod"
@@ -25,10 +20,4 @@ minecraft_memory  = "2G"
 backup_retention_days = 30
 
 # CloudWatch
-alert_email             = ""
 billing_alarm_threshold = 3
-
-# Discord Bot
-discord_public_key     = ""
-discord_application_id = ""
-rcon_password = ""
