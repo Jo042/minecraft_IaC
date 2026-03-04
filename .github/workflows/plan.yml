@@ -45,6 +45,11 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Create dummy Lambda artifacts for plan
+        run: |
+          mkdir -p discord-bot/dist
+          touch discord-bot/dist/lambda_layer.zip
+
       - name: Initialize
         id: init
         run: |
