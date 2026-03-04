@@ -83,6 +83,26 @@ output "iam_role_arn" {
 }
 
 # --------------------------------------------
+# 監視関連
+# --------------------------------------------
+
+output "sns_topic_arn" {
+  description = "アラート通知用 SNS トピックの ARN"
+  value       = aws_sns_topic.alerts.arn
+}
+
+output "cloudwatch_dashboard_url" {
+  description = "CloudWatch ダッシュボードの URL"
+  value       = "https://${var.aws_region}.console.aws.amazon.com/cloudwatch/home?region=${var.aws_region}#dashboards:name=${aws_cloudwatch_dashboard.minecraft.dashboard_name}"
+}
+
+output "cloudwatch_log_group" {
+  description = "Minecraft ログの Log Group"
+  value       = aws_cloudwatch_log_group.minecraft.name
+}
+
+
+# --------------------------------------------
 # Discord Bot 関連
 # --------------------------------------------
 

@@ -27,9 +27,8 @@
   # 適用するロール
   roles:
     - role: common
-      tags: common
     - role: docker
-      tags: docker
+    - role: monitoring
 
   # 事後タスク（ロールの後に実行）
   post_tasks:

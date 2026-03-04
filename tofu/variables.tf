@@ -109,6 +109,28 @@ variable "backup_retention_days" {
 }
 
 # --------------------------------------------
+# 監視・アラート設定
+# --------------------------------------------
+
+variable "alert_email" {
+  description = "アラート通知先のメールアドレス"
+  type        = string
+  default     = ""
+}
+
+variable "billing_alarm_threshold" {
+  description = "課金アラームの閾値（USD）"
+  type        = number
+  default     = 50
+}
+
+variable "enable_detailed_monitoring" {
+  description = "EC2 の詳細モニタリングを有効化（1分間隔、追加料金あり）"
+  type        = bool
+  default     = false
+}
+
+# --------------------------------------------
 # Discord Bot 設定
 # --------------------------------------------
 
@@ -130,3 +152,4 @@ variable "minecraft_port" {
   type        = number
   default     = 25565
 }
+
