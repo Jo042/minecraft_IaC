@@ -43,15 +43,20 @@ jobs:
           tofu fmt -check -recursive -diff
         continue-on-error: true
 
-      - name: Initialize
+      - name: Create dummy Lambda artifacts for validation
         run: |
-          cd tofu
-          tofu init -backend=false
+          mkdir -p discord-bot/dist
+          touch discord-bot/dist/lambda_layer.zip
 
-      - name: Validate
-        run: |
-          cd tofu
-          tofu validate
+            - name: Initialize
+              run: |
+                cd tofu
+                tofu init -backend=false
+
+            - name: Validate
+              run: |
+                cd tofu
+                tofu validate
 
   # ============================================
   # Python コードの検証
@@ -63,6 +68,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 
 
       - name: Setup Python
         uses: actions/setup-python@v5
