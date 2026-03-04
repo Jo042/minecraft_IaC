@@ -96,3 +96,7 @@ minecraft-data/
 *.temp
 .cache/
 docs/
+
+.coverage
+coverage.xml
+.pytest_cache/
