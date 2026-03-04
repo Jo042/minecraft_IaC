@@ -55,7 +55,7 @@ jobs:
         id: plan
         run: |
           cd tofu
-          tofu plan -var-file=environments/prod.tfvars -no-color -out=tfplan
+          tofu plan -var-file=environments/ci.tfvars -no-color -out=tfplan
         continue-on-error: true
         env:
           TF_VAR_discord_public_key: ${{ secrets.DISCORD_PUBLIC_KEY }}
