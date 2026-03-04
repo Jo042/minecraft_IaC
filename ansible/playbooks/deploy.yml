@@ -2,7 +2,8 @@
 - name: Deploy Minecraft Server
   hosts: minecraft
   become: true
-
+  vars_files:
+    - ../../.secrets/credentials.yml
   pre_tasks:
     - name: Display deployment info
       ansible.builtin.debug:

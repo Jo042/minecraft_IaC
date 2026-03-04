@@ -1,7 +1,9 @@
 ---
 - name: Start Minecraft Server
   hosts: minecraft
-  become: true
+  become: true 
+  vars_files:
+    - ../../.secrets/credentials.yml
 
   tasks:
     - name: Start Minecraft server

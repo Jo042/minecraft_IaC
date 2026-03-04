@@ -5,7 +5,9 @@
 - name: Setup Minecraft Server
   hosts: minecraft
   become: true # sudo で実行
-
+  vars_files:
+    - ../../.secrets/credentials.yml
+    
   # 事前タスク（ロールの前に実行）
   pre_tasks:
     - name: Display target host information

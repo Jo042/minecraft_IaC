@@ -38,7 +38,7 @@ minecraft_spawn_protection: 0
 # ============================================
 rcon_enabled: "true"
 rcon_port: 25575
-rcon_password: "change-me-in-production"
+rcon_password: "change-me-in-.secrets"
 
 # ============================================
 # システム設定

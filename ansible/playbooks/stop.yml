@@ -2,7 +2,9 @@
 - name: Stop Minecraft Server
   hosts: minecraft
   become: true
-
+  vars_files:
+    - ../../.secrets/credentials.yml
+    
   tasks:
     - name: Check if container is running
       community.docker.docker_container_info:
