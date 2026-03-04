@@ -107,7 +107,7 @@ jobs:
       - name: Apply
         run: |
           cd tofu
-          tofu apply -var-file=environments/prod.tfvars -auto-approve
+          tofu apply -var-file=environments/ci.tfvars -auto-approve
         env:
           TF_VAR_discord_public_key: ${{ secrets.DISCORD_PUBLIC_KEY }}
           TF_VAR_rcon_password: ${{ secrets.RCON_PASSWORD }}
