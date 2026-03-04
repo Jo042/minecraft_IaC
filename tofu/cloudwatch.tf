@@ -279,7 +279,7 @@ resource "aws_cloudwatch_log_group" "minecraft" {
 resource "aws_cloudwatch_log_metric_filter" "player_joined" {
   name           = "${local.name_prefix}-player-joined"
   log_group_name = aws_cloudwatch_log_group.minecraft.name
-  pattern        = "[timestamp, thread, level, message = *joined the game*]"
+  pattern = "\"joined the game\""
 
   metric_transformation {
     name      = "PlayerJoined"
@@ -292,7 +292,7 @@ resource "aws_cloudwatch_log_metric_filter" "player_joined" {
 resource "aws_cloudwatch_log_metric_filter" "player_left" {
   name           = "${local.name_prefix}-player-left"
   log_group_name = aws_cloudwatch_log_group.minecraft.name
-  pattern        = "[timestamp, thread, level, message = *left the game*]"
+  pattern = "\"left the game\""
 
   metric_transformation {
     name      = "PlayerLeft"
