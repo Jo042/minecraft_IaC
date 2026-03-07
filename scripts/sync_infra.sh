@@ -25,8 +25,6 @@ ssm_bucket_name: "${SSM_BUCKET}"
 backup_s3_bucket: "${BACKUP_BUCKET}"
 aws_region: "ap-northeast-1"
 elastic_ip: "${ELASTIC_IP}"
-# RCON パスワードは Ansible Vault で暗号化
-rcon_password: "{{ vault_rcon_password }}"
 EOF
 
 echo ""

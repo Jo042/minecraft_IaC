@@ -9,7 +9,9 @@
 - name: Backup Minecraft World
   hosts: minecraft
   become: true
-
+  vars_files:
+    - ../../.secrets/credentials.yml
+    
   tasks:
     - name: Display backup start
       ansible.builtin.debug:

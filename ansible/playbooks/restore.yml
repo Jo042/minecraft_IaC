@@ -14,7 +14,9 @@
 - name: Restore Minecraft World
   hosts: minecraft
   become: true
-
+  vars_files:
+    - ../roles/minecraft/defaults/main.yml
+    - ../../.secrets/credentials.yml
   vars_prompt:
     - name: backup_file
       prompt: "Enter backup filename (e.g., minecraft_backup_20240115_040000.tar.gz)"

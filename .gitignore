@@ -1,102 +1,101 @@
-# ===========================================
-# Terraform / OpenTofu
-# ===========================================
-# tfstateには現在のインフラの状態が記録される
-# シークレット情報が含まれる可能性があるため除外必須！
-*.tfstate
-*.tfstate.*
+# ============================================
+# .gitignore
+# ============================================
 
-# tfvarsには変数の値が入る（パスワード等）
-*.tfvars
-!*.tfvars.example
-!ci.tfvars
-# OpenTofu/Terraformの作業ディレクトリ
-.terraform/
-.tofu/
-
-# プランファイル
-*.tfplan
-
-# クラッシュログ
-crash.log
-crash.*.log
-
-# ===========================================
-# Ansible
-# ===========================================
-# インベントリに実際のIPが入ることがある
-ansible/inventory/hosts.yml
-!inventory/hosts.yml.example
-
-# Ansible Vault のパスワードファイル
-.vault_pass
-*.vault
-
-# リトライファイル
-*.retry
-
-minecraft-server.yml
-
-.secrets/vault_pass.txt
-
-# ===========================================
-# Python
-# ===========================================
-__pycache__/
-*.py[cod]
-*$py.class
-.Python
-venv/
-.venv/
-ENV/
-
-# ===========================================
-# AWS
-# ===========================================
-.aws/credentials
-*.pem
-
-discord-bot/dist
-discord-bot/layer
-
-# ===========================================
-# Docker
-# ===========================================
-# 実際の環境変数
-.env
-!.env.example
-
-# ===========================================
-# IDE / Editor
-# ===========================================
+# === OS & IDE ===
+.DS_Store
+Thumbs.db
 .idea/
 .vscode/
 *.swp
 *.swo
 *~
-.DS_Store
 
-# ===========================================
-# LocalStack
-# ===========================================
-localstack-data/
-volume/
+# === Terraform / OpenTofu ===
+# tfstateには現在のインフラの状態（シークレット情報含む）が記録されるため除外必須
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+.tofu/
 
-# ===========================================
-# Minecraft
-# ===========================================
-# ワールドデータ
-minecraft-data/
+# tfvarsには変数の値が入る（パスワード等）
+*.tfvars
+!*.tfvars.example
+!ci.tfvars
 
-# ===========================================
-# その他
-# ===========================================
-*.log
-*.tmp
-*.temp
-.cache/
-docs/
+# プランファイル・クラッシュログ・オーバーライド
+*.tfplan
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
 
+# === Ansible ===
+# インベントリに実際のIPが入ることがあるため除外
+ansible/inventory/hosts.yml
+!ansible/inventory/hosts.yml.example
+
+# Ansible Vault のパスワードファイル
+.vault_pass
+*.vault
+.secrets/vault_pass.txt
+
+# リトライファイル
+*.retry
+
+# プロジェクト固有のAnsible変数（機密情報）
+ansible/inventory/host_vars/minecraft-server.yml
+ansible/inventory/group_vars/all/vault.yml
+minecraft-server.yml
+
+# === 機密情報 & AWS & Docker ===
+# 実際の環境変数と認証情報
+.env
+!.env.example
+.secrets/
+.aws/credentials
+*.pem
+*.key
+.discord-config
+
+# === Python ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+ENV/
+
+# テスト・カバレッジ
 .coverage
 coverage.xml
 .pytest_cache/
+
+# === Node.js ===
+node_modules/
+
+# === ビルド成果物 ===
+discord-bot/dist/
+discord-bot/layer/
+*.zip
+
+# === LocalStack ===
+localstack/localstack-data/
+localstack-data/
+volume/
+
+# === Minecraft ===
+# ワールドデータ
+minecraft-data/
+
+# === ログ & その他 ===
+*.log
+logs/
+*.tmp
+*.temp
+.cache/
