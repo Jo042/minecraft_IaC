@@ -40,6 +40,9 @@ make discord-setup
 
 Discord で `/server status` を実行して動作確認！
 
+> 💡 **詳しいセットアップ手順はこちら**  
+> [セットアップガイド](docs/setup-guide.md) を参照してください。
+
 > 💡 **Makefile を使わず手動でセットアップしたい場合**  
 > [手動セットアップガイド](docs/manual-setup-guide.md) を参照してください。
 
