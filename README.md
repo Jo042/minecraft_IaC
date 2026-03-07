@@ -8,6 +8,7 @@ AWS 上に Minecraft サーバーを自動構築。Discord からサーバーの
 - **Discord 操作** - `/server start` `/server stop` でサーバー管理
 - **コスト最適化** - 使わない時は停止で月 $7 程度
 - **自動バックアップ** - 毎日 S3 にワールドデータを保存
+- **ローカルテスト** - LocalStack + Docker で本番前に動作確認可能
 - **日本語対応** - ドキュメントは全て日本語
 
 ## クイックスタート
@@ -76,7 +77,13 @@ Discord で `/server status` を実行して動作確認！
 | [Discord 設定](docs/discord-setup.md) | Discord Bot の作成方法 |
 | [運用ガイド](docs/operation-guide.md) | 日常の運用方法 |
 | [トラブルシューティング](docs/troubleshooting.md) | よくある問題と解決方法 |
-| [CI/CD 設定](docs/advanced/cicd-setup.md) | 自動デプロイ（上級者向け） |
+
+### 開発者向け
+
+| ドキュメント | 内容 |
+|--------------|------|
+| [ローカル開発環境](docs/local-development.md) | LocalStack + Docker でローカルテスト |
+| [CI/CD 設定](docs/advanced/cicd-setup.md) | GitHub Actions で自動デプロイ |
 
 ## 🛠️ コマンド一覧
 
