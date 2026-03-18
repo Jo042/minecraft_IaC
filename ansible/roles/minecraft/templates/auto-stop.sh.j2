@@ -1,0 +1,93 @@
+#!/bin/bash
+
+MINECRAFT_DIR="{{ minecraft_dir }}"
+COUNT_FILE="/tmp/minecraft_empty_count"
+LOCK_FILE="/tmp/minecraft_auto_stop.lock"
+MAX_COUNT=3
+LOG_FILE="/var/log/minecraft-auto-stop.log"
+
+log() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" >> "$LOG_FILE"
+}
+
+# ロック確認（二重実行防止）
+if [ -f "$LOCK_FILE" ]; then
+    log "Another instance is running. Skipping."
+    exit 0
+fi
+
+# RCON パスワードを取得
+source "${MINECRAFT_DIR}/.env"
+
+# Minecraft コンテナが動いているか確認
+if ! docker ps --format '{{"{{"}}.Names{{"}}"}}' | grep -q "minecraft-server"; then
+    log "Minecraft container is not running. Skipping."
+    rm -f "$COUNT_FILE"
+    exit 0
+fi
+
+# プレイヤー数を取得
+PLAYER_OUTPUT=$(docker exec minecraft-server rcon-cli --password "${RCON_PASSWORD}" list 2>&1 || echo "error")
+
+if echo "$PLAYER_OUTPUT" | grep -qi "error\|refused\|failed"; then
+    log "Failed to get player count: $PLAYER_OUTPUT"
+    exit 0
+fi
+
+PLAYERS=$(echo "$PLAYER_OUTPUT" | grep -oP 'There are \K\d+' || echo "-1")
+
+if [ "$PLAYERS" = "-1" ]; then
+    log "Could not parse player count from: $PLAYER_OUTPUT"
+    exit 0
+fi
+
+log "Current players: $PLAYERS"
+
+if [ "$PLAYERS" = "0" ]; then
+    CURRENT_COUNT=$(($(cat "$COUNT_FILE" 2>/dev/null || echo 0) + 1))
+    echo "$CURRENT_COUNT" > "$COUNT_FILE"
+    
+    log "Empty server count: $CURRENT_COUNT / $MAX_COUNT"
+    
+    if [ "$CURRENT_COUNT" -ge "$MAX_COUNT" ]; then
+        # ロックを取得 & カウントをリセット（再実行防止）
+        touch "$LOCK_FILE"
+        rm -f "$COUNT_FILE"
+        
+        log "=== AUTO STOP INITIATED ==="
+        
+        # サーバーに通知
+        log "Notifying players..."
+        docker exec minecraft-server rcon-cli --password "${RCON_PASSWORD}" \
+            "say [Auto] No players detected. Server stopping in 1 minute..." 2>/dev/null || true
+        
+        sleep 60
+        
+        # ワールドを保存
+        log "Saving world..."
+        docker exec minecraft-server rcon-cli --password "${RCON_PASSWORD}" "save-all" 2>/dev/null || true
+        sleep 5
+        
+        # コンテナを停止
+        log "Stopping Minecraft container..."
+        cd "${MINECRAFT_DIR}"
+        docker-compose down 2>&1 | tee -a "$LOG_FILE"
+        
+        # EC2 を停止（IMDSv2）
+        log "Stopping EC2..."
+        TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+        INSTANCE_ID=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/instance-id)
+        REGION=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/placement/region)
+        
+        log "Instance: $INSTANCE_ID, Region: $REGION"
+        aws ec2 stop-instances --instance-ids "$INSTANCE_ID" --region "$REGION" 2>&1 | tee -a "$LOG_FILE"
+        
+        log "=== STOP COMMAND SENT ==="
+        rm -f "$LOCK_FILE"
+    fi
+else
+    if [ -f "$COUNT_FILE" ]; then
+        log "Players detected. Resetting count."
+        rm -f "$COUNT_FILE"
+    fi
+fi

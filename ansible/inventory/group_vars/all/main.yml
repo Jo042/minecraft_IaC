@@ -39,6 +39,7 @@ minecraft_port_java: 25565
 minecraft_port_geyser: 19132
 geyser_config_dir: /opt/minecraft/geyser
 rcon_port: 25575
+minecraft_auto_stop_enabled: true
 
 # ============================================
 # RCON 設定
