@@ -5,7 +5,6 @@ services:
 
     ports:
       - "{{ minecraft_port_java }}:25565"
-      - "{{ minecraft_port_geyser }}:19132/udp"
       - "{{ rcon_port }}:25575"
 
     environment:
@@ -53,3 +52,20 @@ services:
           memory: 6G
         reservations:
           memory: {{ minecraft_memory }}
+  geyser:
+    image: eclipse-temurin:21-jre-jammy
+    container_name: geyser
+
+    ports:
+      - "{{ minecraft_port_geyser }}:19132/udp"
+
+    volumes:
+      - {{ geyser_config_dir }}:/app
+
+    working_dir: /app
+    command: ["java", "-jar", "Geyser.jar"]
+
+    depends_on:
+      - minecraft
+
+    restart: {{ minecraft_restart_policy }}

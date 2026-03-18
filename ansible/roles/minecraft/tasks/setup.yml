@@ -11,6 +11,26 @@
     - "{{ minecraft_data_dir }}"
     - "{{ backup_dir }}"
 
+- name: Create Geyser directory
+  ansible.builtin.file:
+    path: "{{ geyser_config_dir }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    mode: "0755"
+
+- name: Download Geyser standalone jar
+  ansible.builtin.get_url:
+    url: https://download.geysermc.org/v2/projects/geyser/versions/latest/builds/latest/downloads/standalone
+    dest: "{{ geyser_config_dir }}/Geyser.jar"
+    mode: "0644"
+
+- name: Deploy Geyser config
+  ansible.builtin.template:
+    src: geyser-config.yml.j2
+    dest: "{{ geyser_config_dir }}/config.yml"
+    owner: "{{ ansible_user }}"
+    mode: "0644"
+
 - name: Deploy docker-compose.yml
   ansible.builtin.template:
     src: docker-compose.yml.j2
@@ -19,6 +39,7 @@
     group: ec2-user
     mode: "0644"
   register: compose_file
+  
 
 - name: Deploy .env file
   ansible.builtin.template:
