@@ -1,0 +1,37 @@
+---
+- name: Deploy auto-stop script
+  ansible.builtin.template:
+    src: auto-stop.sh.j2
+    dest: "{{ minecraft_dir }}/auto-stop.sh"
+    mode: "0755"
+    owner: root
+    group: root
+
+- name: Create log file
+  ansible.builtin.file:
+    path: /var/log/minecraft-auto-stop.log
+    state: touch
+    mode: "0644"
+    owner: root
+    group: root
+
+- name: Setup cron job for auto-stop (every 5 minutes)
+  ansible.builtin.cron:
+    name: "Minecraft auto-stop check"
+    minute: "*/5"
+    job: "{{ minecraft_dir }}/auto-stop.sh"
+    user: root
+    state: "{{ 'present' if minecraft_auto_stop_enabled | default(true) else 'absent' }}"
+
+- name: Setup log rotation for auto-stop
+  ansible.builtin.copy:
+    dest: /etc/logrotate.d/minecraft-auto-stop
+    content: |
+      /var/log/minecraft-auto-stop.log {
+          daily
+          rotate 7
+          compress
+          missingok
+          notifempty
+      }
+    mode: "0644"

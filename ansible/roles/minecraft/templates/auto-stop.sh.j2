@@ -1,0 +1,68 @@
+#!/bin/bash
+
+set -e
+
+MINECRAFT_DIR="{{ minecraft_dir }}"
+COUNT_FILE="/tmp/minecraft_empty_count"
+MAX_COUNT=3
+LOG_FILE="/var/log/minecraft-auto-stop.log"
+
+log() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" >> "$LOG_FILE"
+}
+
+if [ -f "${MINECRAFT_DIR}/.env" ]; then
+    source "${MINECRAFT_DIR}/.env"
+fi
+
+if ! docker ps --format '{{"{{"}}.Names{{"}}"}}' | grep -q "minecraft-server"; then
+    log "Minecraft container is not running. Skipping."
+    exit 0
+fi
+
+PLAYER_OUTPUT=$(docker exec minecraft-server rcon-cli --password "${RCON_PASSWORD}" list 2>/dev/null || echo "error")
+
+if echo "$PLAYER_OUTPUT" | grep -q "error"; then
+    log "Failed to get player count. RCON may not be ready."
+    exit 0
+fi
+
+PLAYERS=$(echo "$PLAYER_OUTPUT" | grep -oP 'There are \K\d+' || echo "0")
+
+log "Current players: $PLAYERS"
+
+if [ "$PLAYERS" = "0" ]; then
+    CURRENT_COUNT=$(($(cat "$COUNT_FILE" 2>/dev/null || echo 0) + 1))
+    echo "$CURRENT_COUNT" > "$COUNT_FILE"
+    
+    log "Empty server count: $CURRENT_COUNT / $MAX_COUNT"
+    
+    if [ "$CURRENT_COUNT" -ge "$MAX_COUNT" ]; then
+        log "No players for $(($MAX_COUNT * 5)) minutes. Stopping server..."
+        
+        docker exec minecraft-server rcon-cli --password "${RCON_PASSWORD}" \
+            "say [Auto] No players detected. Server will stop in 1 minute..." 2>/dev/null || true
+        
+        sleep 60
+        
+        docker exec minecraft-server rcon-cli --password "${RCON_PASSWORD}" "save-all" 2>/dev/null || true
+        sleep 5
+        
+        cd "${MINECRAFT_DIR}"
+        docker-compose down
+        
+        log "Minecraft stopped. Stopping EC2 instance..."
+        
+        INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
+        aws ec2 stop-instances --instance-ids "$INSTANCE_ID" --region {{ aws_region }}
+        
+        rm -f "$COUNT_FILE"
+        
+        log "EC2 stop command sent."
+    fi
+else
+    if [ -f "$COUNT_FILE" ]; then
+        log "Players detected. Resetting empty count."
+        rm -f "$COUNT_FILE"
+    fi
+fi

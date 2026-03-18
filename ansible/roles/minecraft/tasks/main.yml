@@ -6,3 +6,6 @@
 - name: Configure backup
   ansible.builtin.include_tasks: backup.yml
   tags: backups
+
+- name: Setup auto-stop
+  ansible.builtin.include_tasks: auto-stop.yml

@@ -33,6 +33,7 @@ minecraft_online_mode: "true"
 minecraft_enable_command_block: "true"
 minecraft_spawn_protection: 0
 
+
 # ============================================
 # RCON 設定
 # ============================================
@@ -45,3 +46,4 @@ rcon_password: "change-me-in-.secrets"
 # ============================================
 minecraft_service_name: minecraft
 minecraft_restart_policy: unless-stopped
+minecraft_auto_stop_enabled: true
