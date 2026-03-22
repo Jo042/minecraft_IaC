@@ -18,7 +18,7 @@ OpenTofu でインフラを定義し、Ansible でサーバーを構成。Discor
 ## クイックスタート
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/minecraft-server-iac.git
+git clone https://github.com/Jo042/minecraft-server-iac.git
 cd minecraft-server-iac
 
 make init     # AWS・Discord 情報を対話形式で設定
