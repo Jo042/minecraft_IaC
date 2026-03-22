@@ -21,6 +21,35 @@ resource "aws_iam_role" "minecraft" {
   tags = local.common_tags
 }
 
+# --------------------------------------------
+# EC2 用 Policy
+# --------------------------------------------
+resource "aws_iam_role_policy" "ec2_self_stop" {
+  name = "${local.name_prefix}-ec2-self-stop"
+  role = aws_iam_role.minecraft.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "AllowSelfStop"
+        Effect = "Allow"
+        Action = [
+          "ec2:StopInstances"
+        ]
+        Resource = "arn:aws:ec2:${var.aws_region}:${data.aws_caller_identity.current.account_id}:instance/*"
+        Condition = {
+          StringEquals = {
+            "ec2:ResourceTag/Project" = var.project_name
+          }
+        }
+      }
+    ]
+  })
+}
+
+data "aws_caller_identity" "current" {}
+
 
 # --------------------------------------------
 # S3 バックアップ用ポリシー
