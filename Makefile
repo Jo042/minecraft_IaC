@@ -97,6 +97,30 @@ logs: ## Minecraft サーバーのログを表示
 		--parameters command="docker logs minecraft-server --tail 50 -f"
 
 # ============================================
+# サーバー管理（Ansible）
+# ============================================
+
+.PHONY: server-start
+server-start: _sync-infra ## Minecraft コンテナを起動（EC2 は起動済みの前提）
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/start.yml
+
+.PHONY: server-stop
+server-stop: _sync-infra ## Minecraft コンテナを停止（プレイヤー通知→保存→停止）
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/stop.yml
+
+.PHONY: backup
+backup: _sync-infra ## S3 に手動バックアップ
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/backup.yml
+
+.PHONY: restore
+restore: _sync-infra ## S3 のバックアップから復元（対話形式）
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/restore.yml
+
+.PHONY: upgrade
+upgrade: _sync-infra ## Minecraft バージョンアップ（対話形式）
+	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/upgrade.yml
+
+# ============================================
 # 開発・メンテナンス用
 # ============================================
 
